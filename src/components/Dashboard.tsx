@@ -5,6 +5,7 @@ import { strategyById } from '../engine/strategies'
 import { useGame } from '../state/store'
 import { Icon, type IconName } from './Icon'
 import { Button, Card, Chip, Kicker, Meter } from './ui'
+import { WrittenReport } from './WrittenReport'
 
 /**
  * The Grown-Up Forge Log, everything the engine knows, said plainly
@@ -140,6 +141,8 @@ export function Dashboard() {
             </div>
           )}
         </Card>
+
+        <WrittenReport />
 
         <Card tone="shade" className="flex flex-wrap items-center gap-3.5 p-5">
           <div className="min-w-56 flex-1">

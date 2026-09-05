@@ -225,6 +225,35 @@ question.
 
 ---
 
+## Where the AI is, and where it deliberately is not
+
+The adaptive layer is a **learner model**, not a prompt. Bayesian Knowledge Tracing is a
+hidden Markov model over each skill; the misconception radar is a rule-based classifier
+over wrong answers; the review queue comes from a decay function. Question generation and
+grading are **deterministic and test-covered**, because a child must never be told a wrong
+answer is right, and a language model cannot promise that about arithmetic.
+
+So a language model is used in exactly one place: **turning the learner model into prose
+for a grown-up.** That is a language problem, which is what language models are for. The
+numbers on the dashboard say what a child has mastered; they do not say what to do about
+it, and no parent can read a mastery score.
+
+It is one optional button. Bring your own key:
+
+```bash
+cp .env.example .env.local     # then paste your key into .env.local
+```
+
+A key can also be pasted straight into the grown-ups' screen, where it stays in that
+browser. **Never build with a key baked in and then host it publicly.** Vite inlines
+`VITE_*` variables into the bundle, where anyone can read them.
+
+The payload is deliberately small enough to read at a glance, and the screen will show it
+to you before you send anything. **No name, no answers the child gave, nothing
+identifying.** Just mastery per grade band, skill labels, and what the misconceptions
+were.
+
+
 ## The other modes
 
 | Mode | What it is |
@@ -273,8 +302,11 @@ because hearing it every single time wears out fast.
 - **Zero asset files.** Every sound is synthesised live through Web Audio on a C-major
   pentatonic scale, so no two sounds can clash however fast a child mashes. Every graphic
   is inline SVG or CSS.
-- **Fully offline.** No accounts, no network, no telemetry. Progress lives in
-  `localStorage` and never leaves the device. The name a child types is stored the same way.
+- **Offline by default.** No accounts, no telemetry. Progress lives in `localStorage` and
+  never leaves the device. The name a child types is stored the same way.
+- **One optional network call.** The grown-ups' screen can ask a language model to write
+  the progress summary in plain English. It is one button, behind a key you supply, and the
+  game is completely playable without it.
 - **187 tests**, run without a framework: `esbuild` bundles the suite, `node` runs it.
 
 ```bash
