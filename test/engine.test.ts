@@ -10,7 +10,7 @@ import { answerChoices, openForgeTray, CHOICE_COUNT } from '../src/engine/choice
 import { article } from '../src/engine/format'
 import { personalise } from '../src/engine/report'
 import { bands } from '../src/components/stages/AreaModel'
-import { cheerSize } from '../src/components/Hero'
+import { cheerSize, bubbleScale } from '../src/components/Hero'
 import { HEROES, HERO_BY_ID, STARTER_HERO, cheerFrom, isUnlocked, unlockedHeroes, unlockHint } from '../src/engine/heroes'
 import type { SkillState } from '../src/engine/types'
 
@@ -858,24 +858,46 @@ ok('the cheer changes from one forge to the next',
      .every((c, i, all) => i === 0 || c !== all[i - 1]))
 
 /*
-  The cloud is a fixed width and the text is laid over it as HTML, so CSS
-  does the wrapping. What still has to hold is that the font steps down
-  far enough for the longest cheer a long name can produce.
+  The cloud is no longer a fixed size: a longer cheer gets a bigger cloud
+  as well as smaller words, because shrinking text alone ends up
+  unreadable and still crowds the outline.
+
+  These mirror the real geometry. The text sits in a box 60% of the
+  bubble's width and 43% of its height, both scaled together, so the
+  ratios below are size-independent.
 */
-ok('a long name steps the cheer down to the smallest size',
-   cheerSize(cheerFrom(HERO_BY_ID[STARTER_HERO]!, 0, 'Konstantinos')) === 13,
-   `${cheerFrom(HERO_BY_ID[STARTER_HERO]!, 0, 'Konstantinos')} -> ${cheerSize(cheerFrom(HERO_BY_ID[STARTER_HERO]!, 0, 'Konstantinos'))}`)
+const BOX_W = 168 * 0.60
+const BOX_H = 121 * 0.43
+/** Roughly how wide a character is, and how tall a line, at a given size. */
+const CH = 0.56
+const LINE = 1.15
 
-ok('a short cheer keeps the big size',
-   cheerSize('Nice work!') === 18)
+const fits = (c: string) => {
+  const size = cheerSize(c)
+  const longest = Math.max(1, ...c.trim().split(/\s+/).map(w => w.length))
+  // a word cannot be broken, so it has to fit one line on its own
+  if (longest * size * CH > BOX_W) return false
+  const lines = Math.ceil((c.length * size * CH) / BOX_W)
+  return lines * size * LINE <= BOX_H
+}
 
-ok('every cheer any name can produce gets a size that fits',
-   ['', 'Ada', 'Alexandra', 'Konstantinos'].every(name =>
-     Array.from({ length: 24 }, (_, n) => cheerFrom(HERO_BY_ID[STARTER_HERO]!, n, name)).every(c => {
-       const size = cheerSize(c)
-       // rough width of the widest line at that size, against the 118px panel
-       return c.length * size * 0.52 <= 118 * 2.2
-     })))
+ok('every cheer fits its cloud, for every hero and every name length',
+   HEROES.every(h => ['', 'Ada', 'Alexandra', 'Konstantinos'].every(name =>
+     Array.from({ length: 24 }, (_, n) => cheerFrom(h, n, name)).every(fits))),
+   HEROES.flatMap(h => ['', 'Konstantinos'].flatMap(name =>
+     Array.from({ length: 24 }, (_, n) => cheerFrom(h, n, name))))
+     .filter(c => !fits(c)).slice(0, 3).join(' | '))
+
+ok('a longer cheer gets a bigger cloud',
+   bubbleScale('Nice work!') === 1 &&
+   bubbleScale('Twice as sharp, Alexandra!') > bubbleScale('Nice work!'))
+
+ok('the words never shrink past readable',
+   HEROES.every(h => Array.from({ length: 24 }, (_, n) => cheerFrom(h, n, 'Konstantinos'))
+     .every(c => cheerSize(c) * bubbleScale(c) >= 12)))
+
+ok('a long single word sets its own ceiling',
+   cheerSize('Go Konstantinos!') < cheerSize('Go Ada!'))
 
 /* ── one opportunity per question ──────────────────────────── */
 section('One opportunity per question')
@@ -1143,12 +1165,6 @@ ok('every named line has a slot for the name',
 
 ok('no plain line has a leftover slot',
    HEROES.every(h => h.cheers.every(l => !l.includes('{n}'))))
-
-ok('every cheer fits the bubble, for every hero and a long name',
-   HEROES.every(h => Array.from({ length: 40 }, (_, n) => cheerFrom(h, n, 'Konstantinos'))
-     .every(c => { const size = cheerSize(c); return c.length * size * 0.52 <= 118 * 2.2 })),
-   HEROES.filter(h => Array.from({ length: 40 }, (_, n) => cheerFrom(h, n, 'Konstantinos'))
-     .some(c => c.length * cheerSize(c) * 0.52 > 118 * 2.2)).map(h => h.name).join(','))
 
 ok('a hero always speaks, whatever the counter',
    ([NaN, undefined, null, Infinity, -4] as unknown as number[])

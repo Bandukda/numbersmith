@@ -145,12 +145,28 @@ function Standard({ hero, landed, chest }: { hero: Hero; landed: boolean; chest?
 
 const STAR = 'M54 62l2.6 5.4 5.9.6-4.4 4 1.3 5.8L54 74.7l-5.4 3.1 1.3-5.8-4.4-4 5.9-.6z'
 
-export function HeroArt({ hero, landed, size = 112 }: Props) {
-  const h = size * (132 / 112)
+/*
+  The box every hero is drawn inside.
+
+  Deliberately wider and taller than any of them needs. Several draw
+  outside the old bounds: Double Trouble's second figure sits 16 to the
+  left, Echo's copies trail behind her, capes stream past the shoulder.
+  That was invisible until a hero stood at the edge of a container that
+  clips, and then a cape simply vanished. Reserving the room here is the
+  fix, rather than asking every container downstream not to clip.
+*/
+const BOX = { x: -26, y: -12, w: 140, h: 156 }
+
+export function HeroArt({ hero, landed, size = 130 }: Props) {
+  const h = size * (BOX.h / BOX.w)
   const suit = C(hero.suit)
 
   return (
-    <svg width={size} height={h} viewBox="-4 -6 112 132" className="overflow-visible">
+    <svg
+      width={size} height={h}
+      viewBox={`${BOX.x} ${BOX.y} ${BOX.w} ${BOX.h}`}
+      className="overflow-visible"
+    >
       <g {...INK}>
         {/* ── Double Trouble: two of her, which nothing else looks like ── */}
         {hero.id === 'double' ? (

@@ -103,10 +103,31 @@ export function Hero({ show, seed, name, heroId }: {
  * so it still fits the cloud.
  */
 export function cheerSize(text: string): number {
+  const t = text.trim()
+  const byLength = t.length > 24 ? 13 : t.length > 16 ? 14.5 : 17
+  /*
+    A single long word cannot wrap, so it sets its own ceiling. This is
+    what a name does: "Konstantinos!" is thirteen characters that have to
+    fit on one line however short the rest of the cheer is, and sizing by
+    total length alone let it run out through the side of the cloud.
+  */
+  const longest = Math.max(1, ...t.split(/\s+/).map((w) => w.length))
+  const byWord = 100 / (longest * 0.62)
+  return Math.max(10.5, Math.min(byLength, byWord))
+}
+
+/**
+ * How much bigger the cloud gets for a longer cheer.
+ *
+ * Shrinking the words alone is the wrong lever past a point: they end up
+ * too small to read, and they still crowd the outline. A longer line
+ * gets a bigger cloud to sit in, which is what a comic would do.
+ */
+export function bubbleScale(text: string): number {
   const n = text.trim().length
-  if (n > 22) return 13
-  if (n > 15) return 15
-  return 18
+  if (n > 24) return 1.42
+  if (n > 16) return 1.2
+  return 1
 }
 
 /**
@@ -127,11 +148,17 @@ function CloudBubble({ text }: { text: string }) {
   // nothing to say. If there is no line, there is no bubble.
   if (!text || !text.trim()) return null
 
+  /*
+    A taller cloud than the first draft. That one was wide and shallow,
+    so the moment a cheer needed two lines the words filled the panel
+    edge to edge and sat on the ink. Height is what two lines need.
+  */
   const bumps = [
     [26, 16, 17], [58, 10, 14], [90, 15, 16], [120, 22, 13],
-    [22, 52, 16], [56, 60, 15], [92, 57, 16], [122, 48, 13],
-    [12, 34, 15], [130, 34, 14],
+    [22, 72, 16], [56, 80, 15], [92, 77, 16], [122, 68, 13],
+    [12, 46, 15], [130, 46, 14],
   ] as const
+  const sc = bubbleScale(text)
 
   return (
     <motion.div
@@ -139,39 +166,39 @@ function CloudBubble({ text }: { text: string }) {
       animate={{ scale: 1, opacity: 1 }}
       transition={{ type: 'spring', stiffness: 320, damping: 15, delay: LAND + 0.3 }}
       className="relative -ml-1 shrink-0"
-      style={{ width: 168, height: 97, transformOrigin: 'bottom left' }}
+      style={{ width: 168 * sc, height: 121 * sc, transformOrigin: 'bottom left' }}
     >
-      <svg viewBox="-6 -6 180 104" width={168} height={97} className="overflow-visible">
+      <svg viewBox="-6 -6 180 130" width={168 * sc} height={121 * sc} className="overflow-visible">
         <g fill="var(--color-cream)" stroke="var(--color-ink)" strokeWidth={3.5} strokeLinejoin="round">
           {bumps.map(([cx, cy, r], i) => <circle key={i} cx={cx} cy={cy} r={r} />)}
-          <rect x={14} y={16} width={118} height={44} rx={16} />
-          {/* tail on the left, three shrinking puffs aimed at his head */}
-          <circle cx={19} cy={62} r={8} />
-          <circle cx={8} cy={71} r={5.5} />
-          <circle cx={0} cy={79} r={3.5} />
+          <rect x={14} y={16} width={118} height={64} rx={18} />
+          {/* tail on the left, three shrinking puffs aimed at the hero's head */}
+          <circle cx={19} cy={82} r={8} />
+          <circle cx={8} cy={91} r={5.5} />
+          <circle cx={0} cy={99} r={3.5} />
         </g>
         {/* seams between the bumps painted out, so the inside is one field */}
         <g fill="var(--color-cream)" stroke="none">
-          <rect x={17} y={19} width={112} height={38} rx={13} />
+          <rect x={17} y={19} width={112} height={58} rx={15} />
           <circle cx={26} cy={16} r={14} /><circle cx={58} cy={10} r={11} />
           <circle cx={90} cy={15} r={13} /><circle cx={120} cy={22} r={10} />
-          <circle cx={22} cy={52} r={13} /><circle cx={56} cy={60} r={12} />
-          <circle cx={92} cy={57} r={13} /><circle cx={122} cy={48} r={10} />
-          <circle cx={12} cy={34} r={12} /><circle cx={130} cy={34} r={11} />
+          <circle cx={22} cy={72} r={13} /><circle cx={56} cy={80} r={12} />
+          <circle cx={92} cy={77} r={13} /><circle cx={122} cy={68} r={10} />
+          <circle cx={12} cy={46} r={12} /><circle cx={130} cy={46} r={11} />
         </g>
       </svg>
 
       {/*
-        Sits exactly over the cloud's inner panel. The percentages come
-        from that rect inside the viewBox, so the words stay put whatever
-        the bubble is scaled to.
+        Inset well within the panel, not flush to it. Words touching a
+        heavy outline read as cramped and are harder for a young child to
+        pick out.
       */}
       <div
-        className="pointer-events-none absolute grid place-items-center px-1 text-center
+        className="pointer-events-none absolute grid place-items-center text-center
                    font-display font-black leading-tight text-ink"
         style={{
-          left: '11.1%', top: '21.2%', width: '65.6%', height: '42.3%',
-          fontSize: cheerSize(text),
+          left: '13.9%', top: '20.5%', width: '60%', height: '43%',
+          fontSize: cheerSize(text) * sc,
         }}
       >
         <span>{text}</span>
