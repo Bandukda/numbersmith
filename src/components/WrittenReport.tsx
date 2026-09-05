@@ -1,10 +1,10 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button, Card, Kicker } from './ui'
 import { Icon } from './Icon'
 import { useGame } from '../state/store'
 import { buildSnapshot, buildPrompt, personalise } from '../engine/report'
-import { writeReport, hasKey, setKey, ReportError } from '../ai/deepseek'
+import { writeReport, hasKey, setKey, hasServer, getPassword, setPassword, ReportError } from '../ai/deepseek'
 
 /*
   The written summary, on the grown-ups' screen only.
@@ -27,13 +27,32 @@ export function WrittenReport() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [keyInput, setKeyInput] = useState('')
+  const [server, setServer] = useState<boolean | null>(null)
   const [showData, setShowData] = useState(false)
-  const [ready, setReady] = useState(hasKey())
+  const [ready, setReady] = useState(hasKey() || !!getPassword())
+
+  // A deployed site holds the key itself and wants a password instead.
+  useEffect(() => {
+    let alive = true
+    void hasServer().then((v) => {
+      if (!alive) return
+      setServer(v)
+      setReady(v ? !!getPassword() : hasKey())
+    })
+    return () => { alive = false }
+  }, [])
   const abort = useRef<AbortController | null>(null)
 
   const strategies = [...new Set(Object.values(states).flatMap((st) => st.strategies))]
   const snapshot = buildSnapshot(states, day, totalForges, bestStreak, strategies)
   const nothingYet = totalForges === 0
+
+  const save = () => {
+    if (server) { setPassword(keyInput); setReady(!!getPassword()) }
+    else { setKey(keyInput); setReady(hasKey()) }
+    setKeyInput('')
+    setError(null)
+  }
 
   const run = async () => {
     setBusy(true); setError(null); setText(null)
@@ -44,6 +63,7 @@ export function WrittenReport() {
       setText(personalise(written, playerName))
     } catch (e) {
       setError(e instanceof ReportError ? e.message : 'Something went wrong. Try again.')
+      if (server && !getPassword()) setReady(false)
     } finally {
       setBusy(false)
     }
@@ -99,22 +119,26 @@ export function WrittenReport() {
         file only helps whoever is running the code, and a teacher trying
         this out is not going to edit a dotfile.
       */}
-      {!ready && (
+      {/*
+        Which secret this build needs depends on where it is running. A
+        deployed site keeps the key on its server and asks for a password;
+        a copy running on your own machine has no server, so it takes a
+        key directly.
+      */}
+      {!ready && server !== null && (
         <div className="mt-4 flex flex-wrap items-center gap-2.5">
           <input
             type="password"
             value={keyInput}
             onChange={(e) => setKeyInput(e.target.value)}
-            placeholder="Paste a DeepSeek API key"
-            aria-label="DeepSeek API key"
+            placeholder={server ? 'Enter the password' : 'Paste a DeepSeek API key'}
+            aria-label={server ? 'Password' : 'DeepSeek API key'}
+            onKeyDown={(e) => { if (e.key === 'Enter') save() }}
             className="ink hard-1 min-w-0 flex-1 rounded-2xl bg-card px-4 py-2.5 text-sm
                        placeholder:text-ink-dim focus:outline-none focus:ring-4 focus:ring-marigold"
           />
-          <Button
-            size="sm" color="card"
-            onClick={() => { setKey(keyInput); setReady(hasKey()); setKeyInput('') }}
-          >
-            Save key
+          <Button size="sm" color="card" onClick={save}>
+            {server ? 'Unlock' : 'Save key'}
           </Button>
         </div>
       )}
@@ -135,10 +159,10 @@ export function WrittenReport() {
         {showData && (
           <>
             <p className="mt-2 text-xs leading-snug text-ink-mid">
-              Sent to DeepSeek: the summary below, and nothing else. No answers
-              your child gave, and <strong className="text-ink">not even their
-              name</strong>. The summary comes back with a blank where the name
-              goes, and Numbersmith fills it in here on this device, so the
+              Sent for summarising: the numbers below, and nothing else. No
+              answers your child gave, and <strong className="text-ink">not even
+              their name</strong>. The summary comes back with a blank where the
+              name goes, and Numbersmith fills it in here on this device, so the
               report reads personally without the name ever being sent.
             </p>
             <pre className="ink mt-2 max-h-56 overflow-auto rounded-xl bg-shade p-3 text-[11px] leading-snug">

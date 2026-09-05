@@ -77,7 +77,7 @@ export function Dashboard() {
           <Card className="p-5">
             <Kicker className="mb-1">Misconceptions detected</Kicker>
             <p className="mb-3.5 text-xs leading-snug text-ink-mid">
-              Not "wrong answers". Named reasoning bugs, each already repaired in-game.
+              Not "wrong answers". Named reasoning errors, each already repaired in-game.
             </p>
             {sum.flags.length === 0 ? (
               <p className="text-sm text-ink-mid">None yet. They appear the moment one is spotted.</p>
