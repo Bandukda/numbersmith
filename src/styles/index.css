@@ -111,3 +111,54 @@
     transition-duration: .01ms !important;
   }
 }
+
+/*
+  A cursor that belongs to the game rather than to the operating system.
+
+  A spark, because sparks are what this game pays you in, and it turns
+  tomato over anything you can press so the pointer itself tells you what
+  is live. Kept small with a centred hotspot: a big cursor looks fun in a
+  screenshot and then hides the very thing a child is trying to tap.
+
+  Text fields keep the I-beam. Losing it would cost real usability for a
+  decoration, and the name box is the one place a child types.
+*/
+body {
+  cursor: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2230%22%20height%3D%2230%22%20viewBox%3D%220%200%2030%2030%22%3E%3Cpath%20d%3D%22M15%202.5%20L17.8%2011.2%20L26.5%2014%20L17.8%2016.8%20L15%2025.5%20L12.2%2016.8%20L3.5%2014%20L12.2%2011.2%20Z%22%20fill%3D%22%23FFB627%22%20stroke%3D%22%2323180F%22%20stroke-width%3D%222.4%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E") 15 15, auto;
+}
+
+button, a, summary, [role="button"], label,
+input[type="range"], input[type="checkbox"], select {
+  cursor: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2230%22%20height%3D%2230%22%20viewBox%3D%220%200%2030%2030%22%3E%3Cpath%20d%3D%22M15%202.5%20L17.8%2011.2%20L26.5%2014%20L17.8%2016.8%20L15%2025.5%20L12.2%2016.8%20L3.5%2014%20L12.2%2011.2%20Z%22%20fill%3D%22%23FF5C39%22%20stroke%3D%22%2323180F%22%20stroke-width%3D%222.4%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E") 15 15, pointer;
+}
+
+input[type="text"], input[type="password"], textarea {
+  cursor: text;
+}
+
+button:disabled, [aria-disabled="true"] {
+  cursor: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2230%22%20height%3D%2230%22%20viewBox%3D%220%200%2030%2030%22%3E%3Cpath%20d%3D%22M15%202.5%20L17.8%2011.2%20L26.5%2014%20L17.8%2016.8%20L15%2025.5%20L12.2%2016.8%20L3.5%2014%20L12.2%2011.2%20Z%22%20fill%3D%22%23FFB627%22%20stroke%3D%22%2323180F%22%20stroke-width%3D%222.4%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E") 15 15, default;
+}
+
+/*
+  Coarse pointers have no cursor to replace, and a device that cannot
+  hover should not pay for artwork it will never show.
+*/
+@media (pointer: coarse) {
+  body, button, a, summary, [role="button"], label,
+  input[type="range"], input[type="checkbox"], select {
+    cursor: auto;
+  }
+}
+
+/* A spark's whole life: bloom, drift, fade. */
+@keyframes spark-fade {
+  0%   { transform: scale(0.3) rotate(0deg);   opacity: 0; }
+  25%  { transform: scale(1) rotate(35deg);    opacity: 1; }
+  100% { transform: scale(0.2) rotate(90deg) translateY(10px); opacity: 0; }
+}
+.animate-spark { animation: spark-fade 620ms ease-out forwards; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-spark { animation: none; opacity: 0; }
+}

@@ -11,6 +11,7 @@ import { Apprentice } from './components/Apprentice'
 import { RepairScene } from './components/RepairScene'
 import { StrategyPicker } from './components/StrategyPicker'
 import { HeroPicker } from './components/HeroPicker'
+import { SparkleTrail } from './components/SparkleTrail'
 import { setAudioEnabled, armAudioOnFirstGesture } from './audio/sound'
 
 export default function App() {
@@ -24,6 +25,7 @@ export default function App() {
   return (
     <>
       <div className="flex h-full flex-col bg-paper">
+        <SparkleTrail />
         <TopBar />
         {screen === 'title' && <TitleScreen />}
         {screen === 'forge' && <ForgeScreen />}

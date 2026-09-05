@@ -270,6 +270,12 @@ data entry rather than a claim about something you built.
 **No reading required.** Every instruction has an arrow pointing at what to do next. The
 game never depends on a child being able to read it.
 
+**A cursor that belongs to the game.** The pointer is a marigold spark that turns tomato
+over anything you can press, so the cursor itself tells a child what is live, and sparks
+fall behind it as it moves. Coarse pointers get none of it, since a device with no cursor
+should not pay for artwork it cannot show, and anyone who has asked their machine for less
+motion has asked for exactly this to stop.
+
 **No timers, ever.** *"There is no clock. Nobody is rushing you."* Speed is not
 understanding, and a clock teaches the wrong lesson about what maths is.
 
