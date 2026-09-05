@@ -283,9 +283,6 @@ npm run build    # production build
 npm test         # 187 tests
 ```
 
-Responsive from iPhone SE (375×667) to desktop, verified on phone, tablet and laptop
-viewports in both orientations.
-
 ---
 
 <p align="center">
