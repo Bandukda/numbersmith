@@ -6,7 +6,6 @@ import { TitleScreen } from './components/TitleScreen'
 import { ForgeScreen } from './components/ForgeScreen'
 import { Constellation } from './components/Constellation'
 import { Dashboard } from './components/Dashboard'
-import { BugJar } from './components/BugJar'
 import { OpenForge } from './components/OpenForge'
 import { Apprentice } from './components/Apprentice'
 import { RepairScene } from './components/RepairScene'
@@ -29,7 +28,6 @@ export default function App() {
         {screen === 'title' && <TitleScreen />}
         {screen === 'forge' && <ForgeScreen />}
         {screen === 'constellation' && <Constellation />}
-        {screen === 'bugs' && <BugJar />}
         {screen === 'heroes' && <HeroPicker />}
         {screen === 'open' && <OpenForge />}
         {screen === 'teach' && <Apprentice />}

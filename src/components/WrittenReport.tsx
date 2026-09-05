@@ -18,7 +18,6 @@ import { writeReport, hasKey, setKey, ReportError } from '../ai/deepseek'
 */
 export function WrittenReport() {
   const states = useGame((s) => s.states)
-  const bugs = useGame((s) => s.bugs)
   const day = useGame((s) => s.day)
   const totalForges = useGame((s) => s.totalForges)
   const bestStreak = useGame((s) => s.bestStreak)
@@ -33,7 +32,7 @@ export function WrittenReport() {
   const abort = useRef<AbortController | null>(null)
 
   const strategies = [...new Set(Object.values(states).flatMap((st) => st.strategies))]
-  const snapshot = buildSnapshot(states, bugs, day, totalForges, bestStreak, strategies)
+  const snapshot = buildSnapshot(states, day, totalForges, bestStreak, strategies)
   const nothingYet = totalForges === 0
 
   const run = async () => {

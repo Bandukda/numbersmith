@@ -7,6 +7,7 @@ import { Orb, toneFor } from './Orb'
 import { Coach } from './Coach'
 import { Icon } from './Icon'
 import { Button, Card, Chip, Kicker, Meter } from './ui'
+import { BackToPlaying } from './BackToPlaying'
 
 const OP_COLOUR: Record<Op, string> = {
   '+': 'bg-marigold', '-': 'bg-leaf', '×': 'bg-plum text-cream', '÷': 'bg-sky',
@@ -215,6 +216,7 @@ export function OpenForge() {
           </Card>
         </div>
       </div>
+      <BackToPlaying className="mt-6 pb-4" />
     </div>
   )
 }

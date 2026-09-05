@@ -43,6 +43,7 @@ export const MISCONCEPTIONS: Record<string, Misconception> = {
   // ── Subtraction ────────────────────────────────────────────
   'sub.smaller-from-larger': {
     id: 'sub.smaller-from-larger',
+    didWhat: 'took the small number away from the big one',
     label: 'Smaller-from-larger bug',
     kidLine: "I see what happened! You took the small number away from the big one every time.",
     repair: (o) => {
@@ -58,6 +59,7 @@ export const MISCONCEPTIONS: Record<string, Misconception> = {
   },
   'sub.swapped': {
     id: 'sub.swapped',
+    didWhat: 'added them instead of subtracting',
     label: 'Added instead of subtracting',
     kidLine: "You added them, but this one needs subtracting!",
     repair: (o) => {
@@ -71,6 +73,7 @@ export const MISCONCEPTIONS: Record<string, Misconception> = {
   },
   'sub.borrow-dropped': {
     id: 'sub.borrow-dropped',
+    didWhat: 'forgot the ten-stick had lent one away',
     label: 'Regrouped the ones but not the tens',
     kidLine: "The ones were right! But the ten-sticks forgot they lent one out.",
     repair: (o) => {
@@ -87,6 +90,7 @@ export const MISCONCEPTIONS: Record<string, Misconception> = {
   // ── Addition ───────────────────────────────────────────────
   'add.carry-dropped': {
     id: 'add.carry-dropped',
+    didWhat: 'forgot to turn ten ones into a ten-stick',
     label: 'Dropped the carry',
     kidLine: "Your ones added up past ten, and ten ones always turn into a ten-stick!",
     repair: (o) => {
@@ -101,6 +105,7 @@ export const MISCONCEPTIONS: Record<string, Misconception> = {
   },
   'add.swapped': {
     id: 'add.swapped',
+    didWhat: 'subtracted instead of adding',
     label: 'Subtracted instead of adding',
     kidLine: "You subtracted, but this one wants adding!",
     repair: (o) => {
@@ -114,6 +119,7 @@ export const MISCONCEPTIONS: Record<string, Misconception> = {
   },
   'add.count-slip': {
     id: 'add.count-slip',
+    didWhat: 'hopped one step too many',
     label: 'Counting slip, off by one',
     kidLine: "So close! It's easy to start counting one hop too early.",
     repair: (o) => {
@@ -128,6 +134,7 @@ export const MISCONCEPTIONS: Record<string, Misconception> = {
   // ── Multiplication ─────────────────────────────────────────
   'mult.added-instead': {
     id: 'mult.added-instead',
+    didWhat: 'added them instead of multiplying',
     label: 'Added the factors',
     kidLine: "You added them. Multiplying makes rows and rows instead!",
     repair: (o) => {
@@ -141,6 +148,7 @@ export const MISCONCEPTIONS: Record<string, Misconception> = {
   },
   'mult.skip-slip': {
     id: 'mult.skip-slip',
+    didWhat: 'missed a whole row when counting',
     label: 'One row off when skip-counting',
     kidLine: "Oops, one whole row got missed when you counted!",
     repair: (o, given) => {
@@ -155,6 +163,7 @@ export const MISCONCEPTIONS: Record<string, Misconception> = {
   },
   'mult.adjacent-fact': {
     id: 'mult.adjacent-fact',
+    didWhat: 'used the answer from a different times fact',
     label: 'Recalled a neighbouring fact',
     kidLine: "That's a real answer! It just belongs to a different times fact.",
     repair: (o) => {
@@ -170,6 +179,7 @@ export const MISCONCEPTIONS: Record<string, Misconception> = {
   // ── Division ───────────────────────────────────────────────
   'div.multiplied-instead': {
     id: 'div.multiplied-instead',
+    didWhat: 'made it bigger instead of dividing',
     label: 'Multiplied instead of dividing',
     kidLine: "You made it bigger, but dividing makes each group smaller!",
     repair: (o) => {
@@ -183,6 +193,7 @@ export const MISCONCEPTIONS: Record<string, Misconception> = {
   },
   'div.reversed': {
     id: 'div.reversed',
+    didWhat: 'divided it the wrong way round',
     label: 'Divided the wrong way round',
     kidLine: "The big number is the one we divide up, not the other way round!",
     repair: (o) => {
@@ -196,6 +207,7 @@ export const MISCONCEPTIONS: Record<string, Misconception> = {
   },
   'div.remainder-dropped': {
     id: 'div.remainder-dropped',
+    didWhat: 'forgot the bits left over',
     label: 'Ignored the leftover',
     kidLine: "Almost! Every group has to hold the SAME amount, so some are left over.",
     repair: (o) => {
@@ -212,6 +224,7 @@ export const MISCONCEPTIONS: Record<string, Misconception> = {
   // ── Fractions ──────────────────────────────────────────────
   'frac.cuts-vs-parts': {
     id: 'frac.cuts-vs-parts',
+    didWhat: 'counted the cuts instead of the pieces',
     label: 'Confused cuts with parts',
     kidLine: "Watch the cuts! Three cuts make FOUR pieces, not three.",
     repair: (o) => {
@@ -225,6 +238,7 @@ export const MISCONCEPTIONS: Record<string, Misconception> = {
   },
   'frac.bigger-denominator': {
     id: 'frac.bigger-denominator',
+    didWhat: 'thought more pieces meant bigger pieces',
     label: 'Bigger denominator means bigger piece',
     kidLine: "More pieces mean each piece is SMALLER, not bigger!",
     repair: (o) => {
@@ -238,6 +252,7 @@ export const MISCONCEPTIONS: Record<string, Misconception> = {
   },
   'frac.add-across': {
     id: 'frac.add-across',
+    didWhat: 'added the bottom numbers too',
     label: 'Added numerators and denominators',
     kidLine: "The bottom number tells us how BIG each piece is. It never gets added!",
     repair: (o) => {
@@ -371,4 +386,19 @@ export function wrongAnswerFor(order: Order, bugId: string): number | null {
     case 'div.remainder-dropped':   return op === '÷' && a % b !== 0 ? Math.ceil(a / b) : null
     default: return null
   }
+}
+
+/**
+ * The misconceptions specific enough to name and teach against.
+ *
+ * A shapeless miss (generic.retry) is not one of them: it says only that
+ * the answer was wrong, which is no use as a diagnosis and would be
+ * meaningless as an option in Teach Pip.
+ */
+export const DIAGNOSABLE: string[] = Object.values(MISCONCEPTIONS)
+  .filter((m) => !!m.didWhat)
+  .map((m) => m.id)
+
+export function describeMiss(id: string): string {
+  return MISCONCEPTIONS[id]?.didWhat ?? 'got it wrong'
 }

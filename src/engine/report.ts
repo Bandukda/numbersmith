@@ -1,8 +1,7 @@
 import { SKILLS, SKILL_BY_ID, GRADES, GRADE_LABEL } from './skills'
 import { statusOf, currentMastery, freshState, fadingSkills } from './mastery'
-import { BUG_BY_ID } from './bugs'
+import { describeMiss } from './misconceptions'
 import type { SkillState } from './types'
-import type { BugState } from './bugs'
 
 /*
   The snapshot handed to the language model for the grown-ups' summary.
@@ -22,7 +21,7 @@ export interface ReportSnapshot {
   strongest: string[]
   workingOn: string[]
   needsReview: string[]
-  misconceptions: { what: string; skill: string; timesSeen: number; resolved: boolean }[]
+  misconceptions: { what: string; skill: string; resolved: boolean }[]
   strategiesUsed: string[]
   totalProblems: number
   bestStreak: number
@@ -30,7 +29,6 @@ export interface ReportSnapshot {
 
 export function buildSnapshot(
   states: Record<string, SkillState>,
-  bugs: Record<string, BugState>,
   day: number,
   totalForges: number,
   bestStreak: number,
@@ -57,13 +55,17 @@ export function buildSnapshot(
     strongest: byMastery.filter((s) => mastery(s.id) >= 0.8).slice(0, 4).map((s) => s.label),
     workingOn: byMastery.filter((s) => mastery(s.id) < 0.6).slice(0, 4).map((s) => s.label),
     needsReview: fadingSkills(states, day, 4).map((s) => s.label),
-    misconceptions: Object.entries(bugs).map(([id, b]) => ({
-      // the grown-up facing description, not the creature's name
-      what: BUG_BY_ID[id]?.didWhat ?? id,
-      skill: SKILL_BY_ID[b.skillId]?.label ?? b.skillId,
-      timesSeen: b.seen,
-      resolved: b.caught,
-    })),
+    /*
+      Every misconception the child has shown, taken from the skill it was
+      shown on. Counted as resolved once that skill is mastered, which is
+      the only evidence that actually settles it.
+    */
+    misconceptions: SKILLS.flatMap((sk) =>
+      (states[sk.id]?.flags ?? []).map((id) => ({
+        what: describeMiss(id),
+        skill: sk.label,
+        resolved: mastery(sk.id) >= 0.92,
+      }))),
     strategiesUsed: strategies,
     totalProblems: totalForges,
     bestStreak,

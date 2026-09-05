@@ -7,6 +7,7 @@ import { VERB_META } from '../engine/orders'
 import { Pip, type PipMood } from './Pip'
 import { Icon } from './Icon'
 import { Button, Card, Chip, Kicker } from './ui'
+import { BackToPlaying } from './BackToPlaying'
 
 /**
  * Teach Pip.
@@ -204,6 +205,7 @@ export function Apprentice() {
           
         </Card>
       </div>
+      <BackToPlaying className="mt-6 pb-4" />
     </div>
   )
 }

@@ -6,8 +6,6 @@ import { RepairVisual } from './RepairVisuals'
 import * as S from '../audio/sound'
 import { Icon } from './Icon'
 import { Button, Chip, Kicker } from './ui'
-import { BugCreature } from './BugCreature'
-import { speciesOf } from '../engine/bugs'
 
 /**
  * The Misconception Radar, made visible.
@@ -24,9 +22,7 @@ export function RepairScene() {
   const finish = useGame((s) => s.finishRepair)
   const called = useGame((s) => s.called)
   const soundOn = useGame((s) => s.soundOn)
-  const spawned = useGame((s) => s.justSpawnedBug)
 
-  const bug = spawned ? speciesOf(spawned) : undefined
   const mc = misconceptionOf(mid ?? undefined)
   const beats = useMemo(
     () => (mc && order ? mc.repair(order, Number(called) || 0) : []),
@@ -48,39 +44,22 @@ export function RepairScene() {
         className="ink-thick hard-4 flex w-[min(780px,100%)] flex-col gap-4 rounded-blob bg-paper p-7"
       >
         <div className="flex items-center gap-3.5">
-          {bug ? (
-            /* The mistake becomes a creature, right at the moment it is made. */
-            <motion.div
-              initial={{ scale: 0, rotate: -140, y: -30 }}
-              animate={{ scale: 1, rotate: 0, y: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 13 }}
-              className="shrink-0"
-            >
-              <BugCreature species={bug} size={62} />
-            </motion.div>
-          ) : (
-            <motion.div
-              animate={{ rotate: [0, 360] }}
-              transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
-              className="ink hard-1 grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-teal"
-            >
-              <Icon name="radar" size={24} strokeWidth={2.6} />
-            </motion.div>
-          )}
+          <motion.div
+            animate={{ rotate: [0, 360] }}
+            transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
+            className="ink hard-1 grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-teal"
+          >
+            <Icon name="radar" size={24} strokeWidth={2.6} />
+          </motion.div>
           <div className="min-w-0">
-            <Kicker>{bug ? 'A bug popped out!' : "Let's look together"}</Kicker>
+            <Kicker>Let's look together</Kicker>
             <div className="font-display text-lg font-black leading-tight">
-              {bug ? `It's ${bug.name}!` : 'Not yet! Here is why'}
+              Not yet! Here is why
             </div>
           </div>
           <Chip className="ml-auto" color="marigold">you said {called}</Chip>
         </div>
 
-        {bug && (
-          <div className="ink hard-1 rounded-2xl bg-marigold px-4 py-2.5 font-display text-sm font-extrabold">
-            {bug.blurb} Catch it by getting this right 3 times in a row!
-          </div>
-        )}
 
         {/* the warm line, never "wrong", always "not yet" */}
         <div className="ink hard-1 rounded-2xl bg-teal px-4 py-3 font-display text-base font-extrabold">

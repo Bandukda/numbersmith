@@ -2,7 +2,7 @@ import { SKILLS, SKILL_BY_ID } from './skills'
 import { currentMastery, freshState } from './mastery'
 import { makeOrder } from './orders'
 import { analyse, wrongAnswerFor } from './misconceptions'
-import { BUG_BY_ID, BUGS } from './bugs'
+import { MISCONCEPTIONS, DIAGNOSABLE, describeMiss } from './misconceptions'
 import type { Order, Skill, SkillState } from './types'
 
 /**
@@ -45,7 +45,7 @@ export interface Round {
 
 /** Bugs that could plausibly arise on this order's operation. */
 function candidatesFor(order: Order): string[] {
-  return BUGS.map((b) => b.id).filter((id) => {
+  return DIAGNOSABLE.filter((id) => {
     const wrong = wrongAnswerFor(order, id)
     if (wrong === null || wrong < 0 || wrong === order.sentence.answer) return false
     // The generated answer must genuinely classify as this bug, or the
@@ -87,7 +87,7 @@ export function buildRound(skillId: string, forceWrong = false): Round | null {
       // Even when right, offer plausible options so the choice stays honest.
       // Simple skills have fewer than three candidate bugs, so pad from the
       // wider bestiary rather than showing a short list.
-      const padded = [...candidates, ...shuffle(BUGS.map((b) => b.id)).filter((id) => !candidates.includes(id))]
+      const padded = [...candidates, ...shuffle(DIAGNOSABLE).filter((id) => !candidates.includes(id))]
       return {
         order, given: order.sentence.answer, pipIsRight: true,
         options: shuffle(padded.slice(0, 3)),
@@ -98,7 +98,7 @@ export function buildRound(skillId: string, forceWrong = false): Round | null {
     const given = wrongAnswerFor(order, bugId)!
 
     // Two distractors, preferring other bugs that fit this same operation.
-    const others = shuffle(BUGS.map((b) => b.id).filter((id) => id !== bugId))
+    const others = shuffle(DIAGNOSABLE.filter((id) => id !== bugId))
     const sameOp = others.filter((id) => candidatesFor(order).includes(id))
     const pool = [...sameOp, ...others.filter((id) => !sameOp.includes(id))]
     const options = shuffle([bugId, ...pool.slice(0, 2)])
@@ -126,7 +126,7 @@ export function pickTeachSkill(
 }
 
 export function didWhat(bugId: string): string {
-  return BUG_BY_ID[bugId]?.didWhat ?? 'made a mistake'
+  return describeMiss(bugId) ?? 'made a mistake'
 }
 
 export const TEACH_SPARKS = {

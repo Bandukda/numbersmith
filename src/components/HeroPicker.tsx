@@ -3,6 +3,7 @@ import { HEROES, isUnlocked, unlockHint } from '../engine/heroes'
 import { HeroArt } from './HeroArt'
 import { useGame } from '../state/store'
 import { Kicker } from './ui'
+import { BackToPlaying } from './BackToPlaying'
 import { Icon } from './Icon'
 import * as S from '../audio/sound'
 
@@ -22,13 +23,11 @@ import * as S from '../audio/sound'
 export function HeroPicker() {
   const bestStreak = useGame((s) => s.bestStreak)
   const ingots = useGame((s) => s.ingots)
-  const bugs = useGame((s) => s.bugs)
   const activeHero = useGame((s) => s.activeHero)
   const setActiveHero = useGame((s) => s.setActiveHero)
   const soundOn = useGame((s) => s.soundOn)
 
-  const caught = Object.values(bugs).filter((b) => b.caught).length
-  const open = HEROES.filter((h) => isUnlocked(h, bestStreak, ingots, caught))
+  const open = HEROES.filter((h) => isUnlocked(h, bestStreak, ingots))
 
   return (
     <div className="paper-dots scroll flex min-h-0 flex-1 flex-col items-center px-4 py-5">
@@ -40,7 +39,7 @@ export function HeroPicker() {
 
       <div className="mt-5 grid w-full max-w-4xl grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
         {HEROES.map((h) => {
-          const unlocked = isUnlocked(h, bestStreak, ingots, caught)
+          const unlocked = isUnlocked(h, bestStreak, ingots)
           const picked = activeHero === h.id
           return (
             <motion.button
@@ -70,6 +69,7 @@ export function HeroPicker() {
           )
         })}
       </div>
+      <BackToPlaying className="mt-6 pb-4" />
     </div>
   )
 }

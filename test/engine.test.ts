@@ -1,9 +1,8 @@
 import { SKILLS, SKILL_BY_ID, EDGES } from '../src/engine/skills'
 import { freshState, updateBKT, relearnBKT, RETRY_LEARN, fadingSkills, WARMUP_SIZE, decay, currentMastery, selectNextSkill, statusOf, predictedSuccess, MASTERY_THRESHOLD, FADING_THRESHOLD } from '../src/engine/mastery'
 import { makeOrder, VERB_META } from '../src/engine/orders'
-import { analyse, smallerFromLarger, noCarrySum, MISCONCEPTIONS } from '../src/engine/misconceptions'
+import { analyse, smallerFromLarger, noCarrySum, MISCONCEPTIONS, DIAGNOSABLE, describeMiss } from '../src/engine/misconceptions'
 import { strategiesFor, SPARKS, HINT_COST, hintCharge } from '../src/engine/strategies'
-import { BUGS, BUG_BY_ID, CATCH_STREAK, isCatchable, summariseBugs, type BugState } from '../src/engine/bugs'
 import { checkWay, wayKey, applyOp, unlockedOps, countWays, pickTarget, ALL_OPS, type Op } from '../src/engine/openforge'
 import { buildRound, pickTeachSkill, teachableSkills, TEACH_THRESHOLD, didWhat } from '../src/engine/apprentice'
 import { answerChoices, openForgeTray, CHOICE_COUNT } from '../src/engine/choices'
@@ -268,72 +267,42 @@ section('Fading semantics')
 
 
 
-/* ── 10. bugs: mistakes become creatures you catch ────────── */
-section('Bug collection')
+/* ── 10. the misconception catalogue ──────────────────────── */
+section('Misconception catalogue')
+
+/*
+  Every misconception the radar can name has to carry a plain-words
+  description of what the child did. Teach Pip offers these as choices
+  and the grown-ups' report reads them out, so an entry without one is a
+  diagnosis nobody can act on.
+*/
 {
   const named = Object.keys(MISCONCEPTIONS).filter((id) => id !== 'generic.retry')
-  ok(`every named misconception has a creature (${BUGS.length})`,
-     named.every((id) => !!BUG_BY_ID[id]),
-     `missing: ${named.filter((id) => !BUG_BY_ID[id]).join(', ')}`)
-  ok('no creature exists without a misconception behind it',
-     BUGS.every((b) => !!MISCONCEPTIONS[b.id]),
-     `orphans: ${BUGS.filter((b) => !MISCONCEPTIONS[b.id]).map((b) => b.id).join(', ')}`)
-  ok('a shapeless miss spawns no creature', !isCatchable('generic.retry'))
-  ok('every creature has a distinct name',
-     new Set(BUGS.map((b) => b.name)).size === BUGS.length)
-  ok('every creature blurb names its own creature',
-     BUGS.every((b) => b.blurb.includes(b.name)),
-     BUGS.filter((b) => !b.blurb.includes(b.name)).map((b) => b.name).join(', '))
 
-  // The catch loop, simulated the way the store runs it.
-  const jar: Record<string, BugState> = {}
-  const bite = (id: string, skillId: string) => {
-    const e = jar[id]
-    jar[id] = e ? { ...e, seen: e.seen + 1, streak: 0, caught: false }
-                : { skillId, seen: 1, streak: 0, caught: false }
-  }
-  const correctOn = (skillId: string) => {
-    for (const [id, b] of Object.entries(jar)) {
-      if (b.caught || b.skillId !== skillId) continue
-      const st = b.streak + 1
-      jar[id] = { ...b, streak: st, caught: st >= CATCH_STREAK }
-    }
-  }
+  ok(`every named misconception says what happened (${named.length})`,
+     named.every((id) => !!MISCONCEPTIONS[id]!.didWhat),
+     `missing: ${named.filter((id) => !MISCONCEPTIONS[id]!.didWhat).join(', ')}`)
 
-  bite('sub.smaller-from-larger', 'g2.borrow')
-  ok('a mistake releases its creature, loose', jar['sub.smaller-from-larger']!.caught === false)
-  correctOn('g2.borrow'); correctOn('g2.borrow')
-  ok('two right in a row is not yet a catch', jar['sub.smaller-from-larger']!.caught === false)
-  correctOn('g2.borrow')
-  ok(`${CATCH_STREAK} right in a row catches it`, jar['sub.smaller-from-larger']!.caught === true)
+  ok('the diagnosable list matches the named ones',
+     DIAGNOSABLE.length === named.length &&
+     named.every((id) => DIAGNOSABLE.includes(id)))
 
-  correctOn('g2.borrow')
-  ok('a caught bug stays caught', jar['sub.smaller-from-larger']!.caught === true)
+  ok('a shapeless miss is not diagnosable',
+     !DIAGNOSABLE.includes('generic.retry'))
 
-  // Progress on one skill must not catch a bug living on another.
-  bite('mult.skip-slip', 'g3.mult9')
-  correctOn('g2.borrow'); correctOn('g2.borrow'); correctOn('g2.borrow')
-  ok('progress on one skill does not catch another skill’s bug',
-     jar['mult.skip-slip']!.caught === false)
+  ok('a shapeless miss still reads as something',
+     describeMiss('generic.retry').length > 3 &&
+     !describeMiss('generic.retry').includes('undefined'))
 
-  // Re-biting resets the streak.
-  correctOn('g3.mult9'); correctOn('g3.mult9')
-  bite('mult.skip-slip', 'g3.mult9')
-  ok('making the mistake again resets the streak', jar['mult.skip-slip']!.streak === 0)
-  ok('and counts the bite', jar['mult.skip-slip']!.seen === 2)
+  ok('an unknown id never leaks into what a grown-up reads',
+     !describeMiss('no.such.thing').includes('no.such.thing'))
 
-  const sum = summariseBugs(jar)
-  ok('summary counts caught, loose and unmet',
-     sum.caught === 1 && sum.loose === 1 && sum.total === BUGS.length &&
-     sum.undiscovered === BUGS.length - 2,
-     JSON.stringify(sum))
-
-  // Every misconception the analyser can emit must be collectable or excluded.
-  ok('every reachable diagnosis is either catchable or the generic fallback',
-     Object.keys(MISCONCEPTIONS).every((id) => isCatchable(id) || id === 'generic.retry'))
+  ok('every description reads as a thing a person did',
+     named.every((id) => {
+       const w = describeMiss(id)
+       return w.length > 8 && w === w.toLowerCase().slice(0, 1) + w.slice(1)
+     }))
 }
-
-
 
 /* ── 11. Open Forge: "make 24 any way you like" ───────────── */
 section('Open Forge')
@@ -777,9 +746,9 @@ ok('nothing a child is told about a mistake uses an invented word',
    Object.values(MISCONCEPTIONS).every(m => !INVENTED.test(m.kidLine)),
    Object.values(MISCONCEPTIONS).filter(m => INVENTED.test(m.kidLine)).map(m => m.id).join(','))
 
-ok('no bug creature describes itself with an invented word',
-   BUGS.every(b => !INVENTED.test(b.blurb) && !INVENTED.test(b.didWhat)),
-   BUGS.filter(b => INVENTED.test(b.blurb + b.didWhat)).map(b => b.name).join(','))
+ok('no description of a mistake uses an invented word',
+   DIAGNOSABLE.every(id => !INVENTED.test(describeMiss(id))),
+   DIAGNOSABLE.filter(id => INVENTED.test(describeMiss(id))).join(','))
 
 /*
   The repair beats were missed by the first sweep, which only read
@@ -1070,7 +1039,7 @@ ok('no skill label ends on an adjective with nothing to describe',
 
 ok('nothing a child reads says "pieces means"',
    Object.values(MISCONCEPTIONS).every(m => !/pieces means/.test(m.kidLine)) &&
-   BUGS.every(b => !/pieces means/.test(b.blurb) && !/pieces means/.test(b.didWhat)))
+   DIAGNOSABLE.every(id => !/pieces means/.test(describeMiss(id))))
 
 /* ── the name never leaves the device ──────────────────────── */
 section('Name substitution')

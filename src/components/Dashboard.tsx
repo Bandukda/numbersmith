@@ -5,6 +5,7 @@ import { strategyById } from '../engine/strategies'
 import { useGame } from '../state/store'
 import { Icon, type IconName } from './Icon'
 import { Button, Card, Chip, Kicker, Meter } from './ui'
+import { BackToPlaying } from './BackToPlaying'
 import { WrittenReport } from './WrittenReport'
 
 /**
@@ -158,6 +159,7 @@ export function Dashboard() {
           <Button size="sm" icon="undo" color="tomato" onClick={resetAll}>Reset player</Button>
         </Card>
       </div>
+      <BackToPlaying className="mt-6 pb-4" />
     </div>
   )
 }

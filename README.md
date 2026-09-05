@@ -16,9 +16,9 @@ Numbers are lumps of hot metal. You **add** them together, **subtract** to break
 two, **multiply** them out in rows, **divide** them into equal groups, and cut them into
 **fractions**. Then you say what you'll get, **and BANG your hammer.**
 
-Every wrong answer is diagnosed, not just marked. Every mistake becomes a creature you can
-catch. And the model underneath knows not just what you've learned, but what you're
-starting to forget.
+Every wrong answer is diagnosed, not just marked: the game names what went wrong and walks
+you through that exact mistake. And the model underneath knows not just what you've
+learned, but what you're starting to forget.
 
 ```bash
 npm install && npm run dev
@@ -39,7 +39,6 @@ Four things follow from that, and they are what make this different:
 | | |
 |---|---|
 | 🔬 **Mistakes are diagnosed** | A wrong answer is the richest signal a learner produces. 16 rules classify *what* went wrong, and a guided repair scene walks through that exact misconception |
-| 🐛 **Mistakes become collectable** | Each misconception has a creature. Make the error and it escapes; get that skill right three times unaided and you catch it. **Your bug jar is a museum of things you used to get wrong** |
 | 🧠 **Forgetting is modelled** | Mastery decays on a curve. A session opens with a warm-up on what you knew and are starting to lose |
 | 🎓 **You teach, too** | In Teach Pip, an apprentice makes a mistake and *you* diagnose it. Explaining is the strongest evidence of understanding there is |
 
@@ -138,7 +137,6 @@ decoration, not a reward.
 | Solve a problem | **+10** |
 | Solve it after a repair | **+8** |
 | Take a hint | **−5** |
-| Catch a bug | **+60** |
 | Find a new way in Your Way | **+15** to **+40** |
 | Teach Pip correctly | **+20** to **+40** |
 
@@ -150,13 +148,6 @@ they have. Anyone short of stars is a beginner, which is exactly who needs help 
 One per skill mastered, plus one for hitting a Your Way goal. **Stars can never buy a
 medal.** If volume could purchase them, grinding easy Kindergarten questions would earn the
 same badge as learning long division, and the game would be arguing against itself.
-
-### 🐛 Bug jar, a museum of your old mistakes
-
-15 creatures, each the face of one misconception. *Flipsy* always takes the small number
-from the big one. *Hoppo* hops one step too many. *Snipsy* counts the cuts instead of the
-pieces. Make the mistake and the creature escapes; get that skill right **three times
-unaided** and you catch it for good.
 
 ### ⭐ Star map, what you have lit up
 
@@ -267,7 +258,6 @@ model does not need it to do the job.
 | 🌟 **Star Map** | The skill graph as a constellation |
 | 🔀 **Your Way** | Make 24 as many ways as you can. Rewards flexibility over speed |
 | 🎓 **Teach Pip** | Pip answers; *you* say whether he's right and name his mistake |
-| 🐛 **Bug Jar** | The creatures you've caught |
 | 📋 **For Grown-Ups** | Mastery by grade band, misconceptions detected, spaced review queue |
 
 ---
@@ -301,7 +291,7 @@ ten blocks, **Carry** hauls a spare ten-rod on her back, **Prime** is a shield t
 be divided, **Glimmer** is a spark.
 
 They join one at a time and **every gate is on unaided work**, a run of clean answers,
-medals crossed, creatures caught. None of those can be farmed by tapping through easy
+medals crossed. None of those can be farmed by tapping through easy
 questions, which is the only reason a collection is allowed here at all. The research on
 rewards is blunt about children: an expected prize for something they already find
 interesting reduces the wanting. What survives that is a reward the learning *is*, rather

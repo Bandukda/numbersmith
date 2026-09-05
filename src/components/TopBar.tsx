@@ -90,11 +90,6 @@ export function TopBar() {
           onClick={() => (screen === 'open' ? setScreen('forge') : openStart(false))}
         />
         <IconButton
-          name="jar" title="My Bug Jar: creatures you have caught"
-          color={screen === 'bugs' ? 'marigold' : 'card'}
-          onClick={() => setScreen(screen === 'bugs' ? 'forge' : 'bugs')}
-        />
-        <IconButton
           name="pip" title="My Heroes: pick who cheers you on"
           color={screen === 'heroes' ? 'marigold' : 'card'}
           onClick={() => setScreen(screen === 'heroes' ? 'forge' : 'heroes')}

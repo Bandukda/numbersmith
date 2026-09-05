@@ -12,8 +12,6 @@ import { HeroArt } from './HeroArt'
 import { HERO_BY_ID } from '../engine/heroes'
 import { Icon, VERB_ICON } from './Icon'
 import { Button, Kicker, Meter, Chip } from './ui'
-import { BugCreature } from './BugCreature'
-import { speciesOf, CATCH_STREAK } from '../engine/bugs'
 import { FuseStage } from './stages/FuseStage'
 import { CleaveStage } from './stages/CleaveStage'
 import { StampStage } from './stages/StampStage'
@@ -33,7 +31,6 @@ export function ForgeScreen() {
   const celebrate = useGame((s) => s.celebrate)
   const lastAward = useGame((s) => s.lastAward)
   const justMastered = useGame((s) => s.justMastered)
-  const justCaught = useGame((s) => s.justCaughtBug)
   const hintUsed = useGame((s) => s.hintUsed)
   const sparks = useGame((s) => s.sparks)
   const useHint = useGame((s) => s.useHint)
@@ -44,7 +41,6 @@ export function ForgeScreen() {
   const inWarmup = useGame((s) => s.inWarmup)
   const warmup = useGame((s) => s.warmup)
   const warmupTotal = useGame((s) => s.warmupTotal)
-  const bugs = useGame((s) => s.bugs)
 
 
   if (!order) return null
@@ -55,11 +51,6 @@ export function ForgeScreen() {
   const locked = phase !== 'building' && phase !== 'calling'
   const forged = phase === 'forged'
 
-  // A loose bug living on this skill: show the child what they are hunting.
-  const hunting = Object.entries(bugs).find(
-    ([, b]) => !b.caught && b.skillId === order.skillId,
-  )
-  const huntedSpecies = hunting ? speciesOf(hunting[0]) : undefined
 
   /* Which orders are answered by typing, and only once they are ready. */
   const typedAnswer =
@@ -161,26 +152,6 @@ export function ForgeScreen() {
 
         {/* Only while the child is actually playing: during a repair or the
             strategy question the forge chrome must not compete with the modal. */}
-        {huntedSpecies && hunting && (phase === 'building' || phase === 'calling') && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 22 }}
-          >
-            <Chip color="marigold">
-              <BugCreature species={huntedSpecies} size={22} animate={false} />
-              Catching {huntedSpecies.name}
-              <span className="ml-0.5 flex gap-1">
-                {Array.from({ length: CATCH_STREAK }).map((_, k) => (
-                  <span
-                    key={k}
-                    className={`h-2 w-2 rounded-full border-2 border-ink
-                                ${k < hunting[1].streak ? 'bg-leaf' : 'bg-paper'}`}
-                  />
-                ))}
-              </span>
-            </Chip>
-          </motion.div>
-        )}
       </div>
 
       {/* stage */}
@@ -286,23 +257,6 @@ export function ForgeScreen() {
         {lastAward && forged && <AwardFloat amount={lastAward.sparks} label={lastAward.label} />}
 
         <AnimatePresence>
-          {justCaught && speciesOf(justCaught) && !justUnlockedHero && (
-            <motion.div
-              initial={{ y: 70, opacity: 0, scale: 0.6 }}
-              animate={{ y: 0, opacity: 1, scale: 1, rotate: -1.5 }}
-              exit={{ y: -24, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 16 }}
-              className="ink-thick hard-4 absolute bottom-4 z-45 flex items-center gap-4 rounded-blob bg-leaf px-7 py-3.5"
-            >
-              <BugCreature species={speciesOf(justCaught)!} size={54} caught />
-              <div>
-                <Kicker>Bug caught! +{60} sparks</Kicker>
-                <div className="font-display text-lg font-black leading-tight">
-                  {speciesOf(justCaught)!.name} is your friend now!
-                </div>
-              </div>
-            </motion.div>
-          )}
           {/* a new hero joining is the biggest thing that can happen, so
               it takes the stage ahead of a bug or a star */}
           {justUnlockedHero && HERO_BY_ID[justUnlockedHero] && (
@@ -323,7 +277,7 @@ export function ForgeScreen() {
               </div>
             </motion.div>
           )}
-          {justMastered && !justCaught && !justUnlockedHero && (
+          {justMastered && !justUnlockedHero && (
             <motion.div
               initial={{ y: 60, opacity: 0, rotate: 6 }}
               animate={{ y: 0, opacity: 1, rotate: -1.5 }}

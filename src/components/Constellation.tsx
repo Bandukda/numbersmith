@@ -5,6 +5,7 @@ import { statusOf, currentMastery, freshState, type SkillStatus } from '../engin
 import { VERB_META } from '../engine/orders'
 import { useGame } from '../state/store'
 import { Button, Card, Chip, Kicker, Meter } from './ui'
+import { BackToPlaying } from './BackToPlaying'
 
 const W = 1000, H = 560
 
@@ -127,6 +128,7 @@ export function Constellation() {
       <Button className="mt-4 self-center" color="tomato" icon="back" onClick={() => setScreen('forge')}>
         Back to playing
       </Button>
+      <BackToPlaying className="mt-6 pb-4" />
     </div>
   )
 }

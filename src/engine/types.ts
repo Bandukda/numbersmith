@@ -93,6 +93,12 @@ export interface Order {
 
 export interface Misconception {
   id: string
+  /**
+   * What the child actually did, in plain words. Used by the grown-ups'
+   * report and by Teach Pip, where the choices are phrased as things a
+   * person did rather than as error codes.
+   */
+  didWhat?: string
   /** What a grown-up sees on the dashboard. */
   label: string
   /** Warm, non-judgemental line spoken to the child. */

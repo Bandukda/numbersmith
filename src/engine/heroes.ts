@@ -19,7 +19,6 @@ export type UnlockRule =
   | { kind: 'start' }
   | { kind: 'streak'; n: number }
   | { kind: 'medals'; n: number }
-  | { kind: 'bugs'; n: number }
 
 export interface Hero {
   id: string
@@ -86,7 +85,7 @@ export const HEROES: Hero[] = [
   },
   {
     id: 'countess', name: 'The Countess', power: 'Counts in twos, fives and tens without pausing',
-    unlock: { kind: 'bugs', n: 1 },
+    unlock: { kind: 'medals', n: 3 },
     headDrop: 2,
     suit: 'plum', cape: 'marigold', trim: 'cream',
     cheers: ['Two, four, six... marvellous.', 'Beautifully counted.', 'Quite right.', 'Splendid!', 'Exactly so.'],
@@ -110,7 +109,7 @@ export const HEROES: Hero[] = [
   },
   {
     id: 'prime', name: 'Prime', power: 'Cannot be divided by anything',
-    unlock: { kind: 'bugs', n: 3 },
+    unlock: { kind: 'medals', n: 8 },
     headDrop: 6,
     suit: 'ink-mid', cape: 'sky', trim: 'sky',
     cheers: ['Unbreakable. Like that answer.', 'Nothing splits that.', 'Solid all the way through.', 'Indivisible.', 'That one holds.'],
@@ -133,17 +132,16 @@ export const HERO_BY_ID: Record<string, Hero> = Object.fromEntries(
 export const STARTER_HERO = 'captain'
 
 /** What a child has to show for a hero to join. */
-export function isUnlocked(h: Hero, bestStreak: number, medals: number, bugsCaught: number): boolean {
+export function isUnlocked(h: Hero, bestStreak: number, medals: number): boolean {
   switch (h.unlock.kind) {
     case 'start':  return true
     case 'streak': return bestStreak >= h.unlock.n
     case 'medals': return medals >= h.unlock.n
-    case 'bugs':   return bugsCaught >= h.unlock.n
   }
 }
 
-export function unlockedHeroes(bestStreak: number, medals: number, bugsCaught: number): Hero[] {
-  return HEROES.filter((h) => isUnlocked(h, bestStreak, medals, bugsCaught))
+export function unlockedHeroes(bestStreak: number, medals: number): Hero[] {
+  return HEROES.filter((h) => isUnlocked(h, bestStreak, medals))
 }
 
 /** Said in a child's own words, so a locked hero is still a goal not a wall. */
@@ -152,7 +150,6 @@ export function unlockHint(h: Hero): string {
     case 'start':  return 'Here from the start'
     case 'streak': return `Get ${h.unlock.n} right in a row`
     case 'medals': return `Win ${h.unlock.n} medal${h.unlock.n === 1 ? '' : 's'}`
-    case 'bugs':   return `Catch ${h.unlock.n} bug${h.unlock.n === 1 ? '' : 's'}`
   }
 }
 

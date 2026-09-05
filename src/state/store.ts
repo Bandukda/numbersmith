@@ -7,7 +7,6 @@ import {
 } from '../engine/mastery'
 import { makeOrder } from '../engine/orders'
 import { analyse, analyseTemper } from '../engine/misconceptions'
-import { type BugState, isCatchable, CATCH_STREAK } from '../engine/bugs'
 import {
   type Op, type Rejection, checkWay, pickTarget, unlockedOps, goalFor, OPEN_SPARKS,
 } from '../engine/openforge'
@@ -17,7 +16,7 @@ import { unlockedHeroes, STARTER_HERO } from '../engine/heroes'
 import type { Order, SkillState, Grade } from '../engine/types'
 import * as S from '../audio/sound'
 
-export type Screen = 'title' | 'forge' | 'constellation' | 'dashboard' | 'bugs' | 'open' | 'teach' | 'heroes'
+export type Screen = 'title' | 'forge' | 'constellation' | 'dashboard' | 'open' | 'teach' | 'heroes'
 export type Phase =
   | 'building'    // arranging the physical structure on the anvil
   | 'calling'     // entering the predicted value
@@ -67,7 +66,6 @@ interface Game {
   /* ── persisted learner model ── */
   states: Record<string, SkillState>
   /** The child's own mistakes, as creatures. Keyed by misconception id. */
-  bugs: Record<string, BugState>
   sparks: number
   /** What the child likes to be called. Optional, and never leaves the device. */
   playerName: string
@@ -115,9 +113,7 @@ interface Game {
   /** Whether the order on screen came from the warm-up queue. */
   inWarmup: boolean
   /** A bug that just popped out of a mistake, for the repair scene. */
-  justSpawnedBug: string | null
   /** A bug just caught, for the celebration banner. */
-  justCaughtBug: string | null
   celebrate: number
 
   /* ── actions ── */
@@ -157,7 +153,6 @@ export const useGame = create<Game>()(
   persist(
     (set, get) => ({
       states: initialStates(),
-      bugs: {},
       sparks: 0,
       playerName: '',
       activeHero: STARTER_HERO,
@@ -189,8 +184,6 @@ export const useGame = create<Game>()(
       warmup: [],
       warmupTotal: 0,
       inWarmup: false,
-      justSpawnedBug: null,
-      justCaughtBug: null,
       celebrate: 0,
 
       start: () => {
@@ -231,9 +224,7 @@ export const useGame = create<Game>()(
           justMastered: null,
           hintUsed: false,
           attemptsThisOrder: 0,
-          justSpawnedBug: null,
-          justCaughtBug: null,
-          justUnlockedHero: null,
+                  justUnlockedHero: null,
           recent: [...recent, skill.id].slice(-6),
         })
       },
@@ -561,17 +552,9 @@ export const useGame = create<Game>()(
         learn('g3.mult5', 3, 2, day, ['skip-count'], ['mult.added-instead'])
 
         // A jar mid-collection: some caught, some still loose, most unmet.
-        const demoBugs: Record<string, BugState> = {
-          'sub.smaller-from-larger': { skillId: 'g2.borrow', seen: 4, streak: 1, caught: false },
-          'add.carry-dropped':       { skillId: 'g2.carry',  seen: 3, streak: 2, caught: false },
-          'add.count-slip':          { skillId: 'g1.sub10',  seen: 2, streak: 0, caught: true },
-          'mult.added-instead':      { skillId: 'g3.mult5',  seen: 1, streak: 0, caught: true },
-          'sub.borrow-dropped':      { skillId: 'g2.borrow', seen: 1, streak: 0, caught: true },
-        }
 
         set({
           states: next,
-          bugs: demoBugs,
           day,
           sparks: 1840,
           ingots: 12,
@@ -584,7 +567,7 @@ export const useGame = create<Game>()(
       },
 
       resetAll: () => set({
-        states: initialStates(), bugs: {}, sparks: 0, ingots: 0, day: 0, badges: [], playerName: '',
+        states: initialStates(), sparks: 0, ingots: 0, day: 0, badges: [], playerName: '',
         bestWays: 0, taught: 0, open: null, teach: null, hintUsed: false, attemptsThisOrder: 0,
         activeHero: STARTER_HERO, justUnlockedHero: null,
         warmup: [], warmupTotal: 0, inWarmup: false,
@@ -597,8 +580,20 @@ export const useGame = create<Game>()(
     }),
     {
       name: 'numbersmith.save.v1',
+      /*
+        Saves written before the creature collection was removed still
+        carry its keys. Nothing reads them, but leaving them means every
+        existing save quietly hauls around a feature that no longer
+        exists. Dropped here rather than by bumping the save name, which
+        would throw away the child's progress along with them.
+      */
+      migrate: (saved) => {
+        if (!saved || typeof saved !== 'object') return saved
+        const { bugs, justCaughtBug, justSpawnedBug, ...rest } = saved as Record<string, unknown>
+        return rest
+      },
       partialize: (s) => ({
-        states: s.states, bugs: s.bugs, sparks: s.sparks, ingots: s.ingots, day: s.day,
+        states: s.states, sparks: s.sparks, ingots: s.ingots, day: s.day,
         bestWays: s.bestWays, taught: s.taught,
         badges: s.badges, totalForges: s.totalForges, bestStreak: s.bestStreak,
         gradeFilter: s.gradeFilter, soundOn: s.soundOn, playerName: s.playerName,
@@ -625,7 +620,7 @@ function grade(set: Set_, get: Get_, given: number) {
 }
 
 function resolveCorrect(set: Set_, get: Get_) {
-  const { order, states, day, sparks, streak, bestStreak, totalForges, ingots, soundOn, bugs, attemptsThisOrder, hintUsed } = get()
+  const { order, states, day, sparks, streak, bestStreak, totalForges, ingots, soundOn, attemptsThisOrder, hintUsed } = get()
   if (!order) return
 
   /*
@@ -645,28 +640,12 @@ function resolveCorrect(set: Set_, get: Get_) {
   const firstTry = attemptsThisOrder === 0
   const unaided = firstTry && !hintUsed
 
-  // Any loose bug living on this skill takes a step toward being caught.
-  // Only an unaided answer counts, or creatures could be caught by
-  // guessing, or by leaning on the hint three times in a row.
-  const nextBugs: Record<string, BugState> = { ...bugs }
-  let caughtNow: string | null = null
-  if (unaided) {
-    for (const [id, b] of Object.entries(bugs)) {
-      if (b.caught || b.skillId !== order.skillId) continue
-      const streakNow = b.streak + 1
-      const isCaught = streakNow >= CATCH_STREAK
-      nextBugs[id] = { ...b, streak: streakNow, caught: isCaught }
-      if (isCaught && !caughtNow) caughtNow = id
-    }
-  }
-
   /*
     A hero joins on unaided work only: a run of clean answers, medals,
     or creatures caught. All three are already impossible to grind, so
     the roster cannot be farmed by tapping through easy questions.
   */
-  const bugsCaughtBefore = Object.values(bugs).filter((b) => b.caught).length
-  const heroesBefore = unlockedHeroes(bestStreak, ingots, bugsCaughtBefore).length
+  const heroesBefore = unlockedHeroes(bestStreak, ingots).length
 
   const prev = states[order.skillId] ?? freshState()
   const before = currentMastery(prev, day)
@@ -687,33 +666,27 @@ function resolveCorrect(set: Set_, get: Get_) {
 
   set({
     states: { ...states, [order.skillId]: next },
-    bugs: nextBugs,
     // The reward follows the same rule as the mastery: a clean answer
     // pays the forge, an answer reached after a miss pays the repair.
-    sparks: sparks + (firstTry ? SPARKS.forge : SPARKS.repair) + (caughtNow ? SPARKS.catch : 0),
+    sparks: sparks + (firstTry ? SPARKS.forge : SPARKS.repair),
     ingots: ingots + (crossedMastery ? 1 : 0),
     streak: newStreak,
     bestStreak: Math.max(bestStreak, newStreak),
     totalForges: totalForges + 1,
     phase: 'forged',
     justMastered: crossedMastery ? order.skillId : null,
-    justCaughtBug: caughtNow,
     celebrate: get().celebrate + 1,
     attemptsThisOrder: attemptsThisOrder + 1,
     justUnlockedHero: (() => {
-      const caughtAfter = Object.values(nextBugs).filter((b) => b.caught).length
       const after = unlockedHeroes(
         Math.max(bestStreak, newStreak),
         ingots + (crossedMastery ? 1 : 0),
-        caughtAfter,
       )
       return after.length > heroesBefore ? after[after.length - 1]!.id : null
     })(),
-    lastAward: caughtNow
-      ? { sparks: (firstTry ? SPARKS.forge : SPARKS.repair) + SPARKS.catch, label: 'Bug caught!' }
-      : firstTry
-        ? { sparks: SPARKS.forge, label: 'You did it!' }
-        : { sparks: SPARKS.repair, label: 'You fixed it!' },
+    lastAward: firstTry
+      ? { sparks: SPARKS.forge, label: 'You did it!' }
+      : { sparks: SPARKS.repair, label: 'You fixed it!' },
   })
 
   /*
@@ -723,26 +696,8 @@ function resolveCorrect(set: Set_, get: Get_) {
 }
 
 function resolveWrong(set: Set_, get: Get_, bug: string) {
-  const { order, states, day, soundOn, bugs } = get()
+  const { order, states, day, soundOn } = get()
   if (!order) return
-
-  // A diagnosable mistake releases its creature. A shapeless miss
-  // (generic.retry) has no creature, so the collection stays meaningful.
-  const nextBugs: Record<string, BugState> = { ...bugs }
-  let spawned: string | null = null
-  if (isCatchable(bug)) {
-    const existing = bugs[bug]
-    nextBugs[bug] = existing
-      ? { ...existing, seen: existing.seen + 1, streak: 0, caught: false }
-      : { skillId: order.skillId, seen: 1, streak: 0, caught: false }
-    spawned = bug
-  }
-  // Any other loose bug on this skill loses its progress too.
-  for (const [id, b] of Object.entries(nextBugs)) {
-    if (!b.caught && b.skillId === order.skillId && id !== bug) {
-      nextBugs[id] = { ...b, streak: 0 }
-    }
-  }
 
   const prev = states[order.skillId] ?? freshState()
   const firstTry = get().attemptsThisOrder === 0
@@ -760,10 +715,8 @@ function resolveWrong(set: Set_, get: Get_, bug: string) {
   if (soundOn) S.sNotYet()
   set({
     states: { ...states, [order.skillId]: next },
-    bugs: nextBugs,
     streak: 0,
     misconception: bug,
-    justSpawnedBug: spawned,
     phase: 'repair',
     repairBeat: 0,
     attemptsThisOrder: get().attemptsThisOrder + 1,

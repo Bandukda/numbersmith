@@ -1,5 +1,5 @@
 import { analyse, wrongAnswerFor } from './misconceptions'
-import { BUGS } from './bugs'
+import { DIAGNOSABLE } from './misconceptions'
 import type { Order } from './types'
 
 /**
@@ -75,7 +75,7 @@ export function answerChoices(order: Order): number[] {
 
   // Misconception-derived distractors, verified to classify as intended.
   // Seeded, so the same order always produces the same four options.
-  const fromBugs = stableShuffle(BUGS.map((b) => b.id), order.id + ':bugs')
+  const fromBugs = stableShuffle(DIAGNOSABLE, order.id + ':bugs')
     .map((id) => ({ id, value: wrongAnswerFor(order, id) }))
     .filter((x): x is { id: string; value: number } =>
       x.value !== null && x.value > 0 && x.value !== answer)
