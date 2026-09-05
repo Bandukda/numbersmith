@@ -216,6 +216,35 @@ question.
 
 ---
 
+## Deploying it
+
+The game itself is a static site and needs nothing. Only the grown-ups' written summary
+touches a network, and that is where the care goes.
+
+**Never put the key in a `VITE_` variable on a deployed site.** Vite inlines those into the
+JavaScript it ships, so the key would be readable by anyone who opens dev tools. A password
+in front of it would change nothing: whoever wanted past could take the key from the bundle
+and call the model directly.
+
+So a deployed build routes through a serverless function in `api/report.ts` instead. Set
+two variables in the host's environment, where they stay on the server:
+
+| Variable | What it is |
+|---|---|
+| `DEEPSEEK_API_KEY` | the key, which the browser never sees |
+| `REPORT_PASSWORD` | what a visitor types to use the summary |
+
+Without **both**, the feature switches itself off. A missing gate is not an open one.
+
+Which path a build uses is decided by asking the endpoint what it is: the function replies
+JSON to everything, and a plain static host does not. A copy running on your own machine
+has no function, so it keeps using a key from `.env.local`.
+
+One trap worth naming. Building locally with a `.env.local` present **does** bake the key
+into `dist/`, so never upload that folder by hand. A host building from a clean checkout
+has no `.env.local` and produces a bundle with no key in it, which is what makes deploying
+from git the safe route.
+
 ## Where the AI is, and where it deliberately is not
 
 The adaptive layer is a **learner model**, not a prompt. Bayesian Knowledge Tracing is a
