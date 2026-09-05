@@ -62,24 +62,6 @@ export function cheerFor(n: number, name = ''): string {
  */
 const LAND = 1.15
 
-/**
- * Split a cheer across at most two lines, breaking nearest the middle.
- *
- * A long name pushes the cheer past what the cloud can hold: "You nailed
- * it, Konstantinos!" rendered 160px wide inside a bubble with about 150px
- * of usable room, even at the smallest font step. Two balanced lines fit
- * comfortably and keep the text big enough to read.
- */
-export function wrapCheer(text: string): string[] {
-  if (text.length <= 15) return [text]
-  const mid = text.length / 2
-  let best = -1
-  for (let i = 0; i < text.length; i++) {
-    if (text[i] !== ' ') continue
-    if (best < 0 || Math.abs(i - mid) < Math.abs(best - mid)) best = i
-  }
-  return best < 0 ? [text] : [text.slice(0, best), text.slice(best + 1)]
-}
 
 export function Hero({ show, seed, name }: { show: boolean; seed: number; name?: string }) {
   const cheer = useMemo(() => cheerFor(seed, name), [seed, name])
@@ -145,7 +127,32 @@ export function Hero({ show, seed, name }: { show: boolean; seed: number; name?:
   )
 }
 
-/** Comic bubble built from overlapping circles, so the edge reads as cloud. */
+/**
+ * How big the words are, by how many there are.
+ *
+ * Short cheers get to shout. A long one with a long name in it steps down
+ * so it still fits the cloud.
+ */
+export function cheerSize(text: string): number {
+  const n = text.trim().length
+  if (n > 22) return 13
+  if (n > 15) return 15
+  return 18
+}
+
+/**
+ * Comic bubble: an SVG cloud with the words laid over it as plain HTML.
+ *
+ * The words used to be SVG <text> with <tspan> lines, which renders fine
+ * in Chrome and came out completely blank in Safari, so the hero flew in
+ * and held up an empty cloud. SVG text is fragile across browsers, has no
+ * wrapping of its own, and needs dominant-baseline to centre, which is
+ * exactly the attribute Safari is worst at.
+ *
+ * HTML has none of those problems: it wraps by itself, centres with
+ * flexbox and renders the same everywhere. The cloud stays SVG because a
+ * cloud is a shape; the cheer is text, so it is text.
+ */
 function CloudBubble({ text }: { text: string }) {
   // An empty cloud is worse than no cloud: it reads as the hero having
   // nothing to say. If there is no line, there is no bubble.
@@ -156,21 +163,15 @@ function CloudBubble({ text }: { text: string }) {
     [22, 52, 16], [56, 60, 15], [92, 57, 16], [122, 48, 13],
     [12, 34, 15], [130, 34, 14],
   ] as const
+
   return (
     <motion.div
       initial={{ scale: 0, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ type: 'spring', stiffness: 320, damping: 15, delay: LAND + 0.3 }}
-      /*
-        No top margin, while the Captain carries 34px of it. That gap is
-        what lifts the bubble clear of his head: its tail then reaches down
-        to him instead of pointing at his chest.
-      */
-      className="-ml-1 shrink-0"
-      /* grows out of the tail, which points back at his head */
-      style={{ transformOrigin: 'bottom left' }}
+      className="relative -ml-1 shrink-0"
+      style={{ width: 168, height: 97, transformOrigin: 'bottom left' }}
     >
-      {/* slack in the viewBox so the ink and shadow cannot clip themselves */}
       <svg viewBox="-6 -6 180 104" width={168} height={97} className="overflow-visible">
         <g fill="var(--color-cream)" stroke="var(--color-ink)" strokeWidth={3.5} strokeLinejoin="round">
           {bumps.map(([cx, cy, r], i) => <circle key={i} cx={cx} cy={cy} r={r} />)}
@@ -189,24 +190,23 @@ function CloudBubble({ text }: { text: string }) {
           <circle cx={92} cy={57} r={13} /><circle cx={122} cy={48} r={10} />
           <circle cx={12} cy={34} r={12} /><circle cx={130} cy={34} r={11} />
         </g>
-        {(() => {
-          const lines = wrapCheer(text)
-          const longest = Math.max(...lines.map((l) => l.length))
-          const size = longest > 15 ? 13.5 : longest > 11 ? 15.5 : 18
-          const top = lines.length === 1 ? 38 : 38 - (size * 1.1) / 2
-          return (
-            <text
-              x={72} textAnchor="middle" dominantBaseline="middle"
-              fontFamily="var(--font-display)" fontWeight={900}
-              fontSize={size} fill="var(--color-ink)"
-            >
-              {lines.map((l, i) => (
-                <tspan key={i} x={72} y={top + i * size * 1.1}>{l}</tspan>
-              ))}
-            </text>
-          )
-        })()}
       </svg>
+
+      {/*
+        Sits exactly over the cloud's inner panel. The percentages come
+        from that rect inside the viewBox, so the words stay put whatever
+        the bubble is scaled to.
+      */}
+      <div
+        className="pointer-events-none absolute grid place-items-center px-1 text-center
+                   font-display font-black leading-tight text-ink"
+        style={{
+          left: '11.1%', top: '21.2%', width: '65.6%', height: '42.3%',
+          fontSize: cheerSize(text),
+        }}
+      >
+        <span>{text}</span>
+      </div>
     </motion.div>
   )
 }

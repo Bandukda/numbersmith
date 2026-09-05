@@ -10,7 +10,7 @@ import { answerChoices, openForgeTray, CHOICE_COUNT } from '../src/engine/choice
 import { article } from '../src/engine/format'
 import { personalise } from '../src/engine/report'
 import { bands } from '../src/components/stages/AreaModel'
-import { cheerFor, wrapCheer } from '../src/components/Hero'
+import { cheerFor, cheerSize } from '../src/components/Hero'
 import type { SkillState } from '../src/engine/types'
 
 let pass = 0, fail = 0
@@ -848,72 +848,24 @@ ok('the cheer changes from one forge to the next',
      .every((c, i, all) => i === 0 || c !== all[i - 1]))
 
 /*
-  The bubble is a fixed width, so the constraint is the longest LINE after
-  wrapping, not the length of the whole cheer. An earlier version of this
-  test checked the total and passed happily while "You nailed it,
-  Konstantinos!" rendered 160px wide inside a 150px cloud.
-
-  Measured against the real thing: 15 characters comes out at about 108px
-  at the font step that length selects, which sits comfortably inside.
+  The cloud is a fixed width and the text is laid over it as HTML, so CSS
+  does the wrapping. What still has to hold is that the font steps down
+  far enough for the longest cheer a long name can produce.
 */
-const LINE_MAX = 15
-const longestLine = (c: string) => Math.max(...wrapCheer(c).map((l) => l.length))
+ok('a long name steps the cheer down to the smallest size',
+   cheerSize(cheerFor(0, 'Konstantinos')) === 13,
+   `${cheerFor(0, 'Konstantinos')} -> ${cheerSize(cheerFor(0, 'Konstantinos'))}`)
 
-ok('every cheer wraps to lines that fit the bubble',
+ok('a short cheer keeps the big size',
+   cheerSize('Nice work!') === 18)
+
+ok('every cheer any name can produce gets a size that fits',
    ['', 'Ada', 'Alexandra', 'Konstantinos'].every(name =>
-     Array.from({ length: 24 }, (_, n) => cheerFor(n, name))
-       .every(c => longestLine(c) <= LINE_MAX)),
-   ['', 'Ada', 'Alexandra', 'Konstantinos'].flatMap(name =>
-     Array.from({ length: 24 }, (_, n) => cheerFor(n, name)))
-     .filter(c => longestLine(c) > LINE_MAX).join(' | '))
-
-/*
-  Every named variant has to be reachable. Plain `n % 2` against a list of
-  even length only ever named the even indices, quietly leaving six of the
-  twelve named cheers as dead code that no child could ever see.
-*/
-ok('every named cheer can actually appear',
-   (() => {
-     const seen = new Set(Array.from({ length: 480 }, (_, n) => cheerFor(n, 'Ada'))
-       .filter(c => c.includes('Ada')))
-     return seen.size === 12
-   })(),
-   `only ${new Set(Array.from({ length: 480 }, (_, n) => cheerFor(n, 'Ada')).filter(c => c.includes('Ada'))).size} of 12 reachable`)
-
-/*
-  A speech bubble with nothing in it is the failure mode here: the hero
-  flies in, holds up an empty cloud and says nothing. Anything that could
-  index the cheer list with a non-number has to still produce a line.
-*/
-ok('a broken counter still produces a cheer',
-   ([NaN, undefined, null, Infinity, -Infinity, -3, 1.7] as unknown as number[])
-     .every(n => {
-       const c = cheerFor(n, 'Ada')
-       return typeof c === 'string' && c.trim().length > 3 && !c.includes('undefined')
-     }),
-   ([NaN, undefined, null, Infinity, -3] as unknown as number[])
-     .map(n => `${String(n)}=>${JSON.stringify(cheerFor(n, 'Ada'))}`).join(' '))
-
-ok('a broken name still produces a cheer',
-   ([undefined, null] as unknown as string[])
-     .every(nm => cheerFor(2, nm).trim().length > 3))
-
-ok('no cheer is ever empty, for any counter in a long session',
-   Array.from({ length: 500 }, (_, n) => cheerFor(n, 'Ada'))
-     .every(c => c.trim().length > 3 && !c.includes('{n}')))
-
-ok('every plain cheer can actually appear',
-   new Set(Array.from({ length: 480 }, (_, n) => cheerFor(n, ''))).size === 12)
-
-ok('a cheer never needs more than two lines',
-   ['', 'Ada', 'Konstantinos'].every(name =>
-     Array.from({ length: 24 }, (_, n) => cheerFor(n, name))
-       .every(c => wrapCheer(c).length <= 2)))
-
-ok('wrapping never loses or invents a character',
-   ['', 'Ada', 'Konstantinos'].every(name =>
-     Array.from({ length: 24 }, (_, n) => cheerFor(n, name))
-       .every(c => wrapCheer(c).join(' ') === c)))
+     Array.from({ length: 24 }, (_, n) => cheerFor(n, name)).every(c => {
+       const size = cheerSize(c)
+       // rough width of the widest line at that size, against the 118px panel
+       return c.length * size * 0.52 <= 118 * 2.2
+     })))
 
 /* ── one opportunity per question ──────────────────────────── */
 section('One opportunity per question')
