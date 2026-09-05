@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/>
+<title>Numbersmith, art directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Nunito:wght@700;800;900&family=Outfit:wght@500;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box}*{margin:0;padding:0}
+body{background:#0d0d10;font-family:Nunito,sans-serif}
+.screen{width:1200px;height:700px;position:relative;overflow:hidden;margin:0 auto}
+.tag{width:1200px;margin:34px auto 10px;color:#9aa;font:800 13px/1 Nunito;letter-spacing:.22em;text-transform:uppercase}
+.tag b{color:#fff;letter-spacing:.06em;font-size:19px;display:block;margin-top:7px;text-transform:none}
+
+/* ══════════ A · TOYBOX ══════════ */
+.A{background:#FBF0DC;font-family:Nunito}
+.A .paper{position:absolute;inset:0;opacity:.5;
+  background-image:radial-gradient(#D9C7A4 1px,transparent 1px);background-size:15px 15px}
+.A .bar{position:absolute;top:0;left:0;right:0;height:74px;background:#FF5C39;border-bottom:4px solid #23180F;
+  display:flex;align-items:center;padding:0 26px;gap:14px}
+.A .logo{font:900 25px/1 Outfit;color:#FFF3DC;letter-spacing:-.02em;display:flex;align-items:center;gap:9px}
+.A .pill{background:#FFF3DC;border:3px solid #23180F;border-radius:999px;padding:7px 15px;font:900 16px/1 Outfit;
+  color:#23180F;box-shadow:3px 3px 0 #23180F;display:flex;align-items:center;gap:7px}
+.A .card{position:absolute;top:112px;left:50%;transform:translateX(-50%);background:#fff;border:4px solid #23180F;
+  border-radius:22px;box-shadow:7px 7px 0 #23180F;padding:17px 28px;display:flex;align-items:center;gap:20px}
+.A .vb{width:52px;height:52px;border-radius:14px;background:#FFB627;border:3px solid #23180F;display:grid;place-items:center}
+.A .lbl{font:900 11px/1 Outfit;letter-spacing:.15em;color:#8A7355;text-transform:uppercase}
+.A .ttl{font:900 30px/1 Outfit;color:#23180F;letter-spacing:-.02em;margin-top:5px}
+.A .anvil{position:absolute;top:238px;left:50%;transform:translateX(-50%);width:730px;height:198px;background:#2EC4B6;
+  border:4px solid #23180F;border-radius:26px;box-shadow:9px 9px 0 #23180F;display:flex;align-items:center;justify-content:center;gap:30px}
+.A .orb{width:104px;height:104px;border-radius:50%;border:4px solid #23180F;display:grid;place-items:center;
+  font:900 44px/1 Outfit;color:#23180F;box-shadow:5px 5px 0 #23180F}
+.A .plus{font:900 44px/1 Outfit;color:#0E3B37}
+.A .tray{position:absolute;top:468px;left:50%;transform:translateX(-50%);display:flex;gap:15px}
+.A .ore{width:74px;height:74px;border-radius:50%;border:4px solid #23180F;display:grid;place-items:center;
+  font:900 31px/1 Outfit;color:#23180F;box-shadow:4px 4px 0 #23180F;background:#FFB627}
+.A .cta{position:absolute;bottom:38px;left:50%;transform:translateX(-50%);background:#FF5C39;border:4px solid #23180F;
+  border-radius:18px;box-shadow:6px 6px 0 #23180F;padding:17px 48px;font:900 25px/1 Outfit;color:#FFF3DC;letter-spacing:.02em}
+
+/* ══════════ B · DEEP ARCADE ══════════ */
+.B{background:#151022;font-family:'Space Grotesk',sans-serif}
+.B .band{position:absolute;top:-130px;left:-90px;width:1450px;height:390px;background:#2A1D4A;transform:rotate(-7deg)}
+.B .band2{position:absolute;bottom:-170px;right:-110px;width:1450px;height:330px;background:#1E1636;transform:rotate(-7deg)}
+.B .bar{position:absolute;top:0;left:0;right:0;height:70px;display:flex;align-items:center;padding:0 30px;gap:13px}
+.B .logo{font:700 23px/1 'Space Grotesk';color:#FFF4E0;letter-spacing:-.03em;display:flex;align-items:center;gap:9px}
+.B .pill{border:2px solid #4A3D72;border-radius:7px;padding:7px 13px;font:700 15px/1 'Space Grotesk';color:#C6F135;background:#1E1636}
+.B .card{position:absolute;top:118px;left:78px;background:#C6F135;padding:20px 32px;border-radius:4px;
+  transform:rotate(-1.4deg);box-shadow:11px 11px 0 rgba(0,0,0.42)}
+.B .lbl{font:700 11px/1 'Space Grotesk';letter-spacing:.2em;color:#4A5A0A;text-transform:uppercase}
+.B .ttl{font:700 37px/1 'Space Grotesk';color:#171208;letter-spacing:-.035em;margin-top:6px}
+.B .anvil{position:absolute;top:264px;left:78px;right:78px;height:214px;background:#0E0A1A;border:2px solid #3A2E5E;
+  display:flex;align-items:center;justify-content:center;gap:34px}
+.B .orb{width:112px;height:112px;border-radius:50%;display:grid;place-items:center;font:700 46px/1 'Space Grotesk';
+  color:#171208;letter-spacing:-.04em}
+.B .plus{font:700 40px/1 'Space Grotesk';color:#FF3D81}
+.B .tray{position:absolute;top:508px;left:78px;display:flex;gap:13px}
+.B .ore{width:76px;height:76px;border-radius:50%;display:grid;place-items:center;font:700 30px/1 'Space Grotesk';
+  color:#171208;background:#FFF4E0;border:2px solid #FFF4E0}
+.B .cta{position:absolute;bottom:44px;right:78px;background:#FF3D81;padding:19px 46px;
+  font:700 24px/1 'Space Grotesk';color:#FFF4E0;letter-spacing:.01em;box-shadow:8px 8px 0 #7A1740}
+
+/* ══════════ C · PAPER WORKSHOP ══════════ */
+.C{background:#EFE6D2;font-family:Nunito}
+.C .grid{position:absolute;inset:0;opacity:.42;
+  background-image:linear-gradient(#D4C6A8 1px,transparent 1px),linear-gradient(90deg,#D4C6A8 1px,transparent 1px);
+  background-size:29px 29px}
+.C .rule{position:absolute;left:64px;right:64px;height:2px;background:#1F2A44}
+.C .bar{position:absolute;top:0;left:64px;right:64px;height:82px;display:flex;align-items:center;gap:15px}
+.C .logo{font:800 25px/1 Fraunces;color:#1F2A44;letter-spacing:-.01em;display:flex;align-items:center;gap:10px}
+.C .pill{border:1.5px solid #1F2A44;border-radius:2px;padding:6px 13px;font:800 13px/1 Nunito;color:#1F2A44;
+  letter-spacing:.09em;text-transform:uppercase}
+.C .card{position:absolute;top:126px;left:64px;right:64px;display:flex;align-items:flex-end;gap:22px;
+  border-bottom:2px solid #1F2A44;padding-bottom:18px}
+.C .lbl{font:800 11px/1 Nunito;letter-spacing:.22em;color:#8A7A5C;text-transform:uppercase}
+.C .ttl{font:600 46px/1 Fraunces;color:#1F2A44;letter-spacing:-.02em;margin-top:9px}
+.C .num{margin-left:auto;font:600 15px/1 Fraunces;color:#A64B2A;font-style:italic}
+.C .anvil{position:absolute;top:266px;left:64px;right:64px;height:206px;border:2px solid #1F2A44;background:#F7F1E2;
+  display:flex;align-items:center;justify-content:center;gap:38px}
+.C .orb{width:110px;height:110px;border-radius:50%;border:2px solid #1F2A44;display:grid;place-items:center;
+  font:600 44px/1 Fraunces;color:#1F2A44}
+.C .plus{font:600 38px/1 Fraunces;color:#A64B2A}
+.C .tray{position:absolute;top:508px;left:64px;display:flex;gap:17px}
+.C .ore{width:72px;height:72px;border-radius:50%;border:2px solid #1F2A44;display:grid;place-items:center;
+  font:600 29px/1 Fraunces;color:#1F2A44;background:#F7F1E2}
+.C .cta{position:absolute;bottom:46px;right:64px;background:#1F2A44;padding:16px 42px;border-radius:2px;
+  font:800 17px/1 Nunito;color:#EFE6D2;letter-spacing:.13em;text-transform:uppercase}
+</style></head><body>
+
+<div class="tag">Direction A<b>Toybox, thick ink, hard shadows, saturated toy colour</b></div>
+<div class="screen A">
+  <div class="paper"></div>
+  <div class="bar">
+    <div class="logo"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FFF3DC" stroke-width="2.6" stroke-linecap="round"><path d="M3 21l7-7"/><path d="M13 3l8 8-3.5 3.5L9.5 6.5z"/></svg>NUMBERSMITH</div>
+    <div style="margin-left:auto;display:flex;gap:11px">
+      <div class="pill"><svg width="15" height="15" viewBox="0 0 24 24" fill="#FFB627" stroke="#23180F" stroke-width="2.4"><path d="M12 2l2.6 6.8L22 9.6l-5.4 4.7L18.2 22 12 18.2 5.8 22l1.6-7.7L2 9.6l7.4-.8z"/></svg>128</div>
+      <div class="pill">4 in a row</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="vb"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#23180F" stroke-width="2.8" stroke-linecap="round"><circle cx="8" cy="12" r="5"/><circle cx="16" cy="12" r="5"/></svg></div>
+    <div><div class="lbl">Fuse · Grade 1 · Make a Ten</div><div class="ttl">Forge a 12</div></div>
+  </div>
+  <div class="anvil">
+    <div class="orb" style="background:#FFB627">8</div>
+    <div class="plus">+</div>
+    <div class="orb" style="background:#FF5C39;color:#FFF3DC">4</div>
+  </div>
+  <div class="tray">
+    <div class="ore">3</div><div class="ore" style="background:#7B2CBF;color:#FFF3DC">8</div>
+    <div class="ore" style="background:#58B368">5</div><div class="ore">4</div>
+    <div class="ore" style="background:#2EC4B6">7</div>
+  </div>
+  <div class="cta">CALL IT →</div>
+</div>
+
+<div class="tag">Direction B<b>Deep Arcade, dark, but a game menu rather than a dashboard</b></div>
+<div class="screen B">
+  <div class="band"></div><div class="band2"></div>
+  <div class="bar">
+    <div class="logo"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C6F135" stroke-width="2.2" stroke-linecap="round"><path d="M3 21l7-7"/><path d="M13 3l8 8-3.5 3.5L9.5 6.5z"/></svg>NUMBERSMITH</div>
+    <div style="margin-left:auto;display:flex;gap:11px"><div class="pill">128 SPARKS</div><div class="pill" style="color:#FF3D81">STREAK 4</div></div>
+  </div>
+  <div class="card"><div class="lbl">Fuse · Grade 1 · Make a Ten</div><div class="ttl">FORGE A 12</div></div>
+  <div class="anvil">
+    <div class="orb" style="background:#C6F135">8</div>
+    <div class="plus">+</div>
+    <div class="orb" style="background:#22D3EE">4</div>
+  </div>
+  <div class="tray">
+    <div class="ore">3</div><div class="ore" style="background:#C6F135">8</div><div class="ore">5</div>
+    <div class="ore" style="background:#22D3EE">4</div><div class="ore">7</div>
+  </div>
+  <div class="cta">CALL IT →</div>
+</div>
+
+<div class="tag">Direction C<b>Paper Workshop, editorial, letterpress, Montessori materials</b></div>
+<div class="screen C">
+  <div class="grid"></div>
+  <div class="rule" style="top:82px"></div>
+  <div class="bar">
+    <div class="logo"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#1F2A44" stroke-width="1.7" stroke-linecap="round"><path d="M3 21l7-7"/><path d="M13 3l8 8-3.5 3.5L9.5 6.5z"/></svg>Numbersmith</div>
+    <div style="margin-left:auto;display:flex;gap:11px"><div class="pill">128 sparks</div><div class="pill" style="color:#A64B2A;border-color:#A64B2A">streak 4</div></div>
+  </div>
+  <div class="card">
+    <div><div class="lbl">Fuse · Grade 1 · Make a Ten</div><div class="ttl">Forge a 12</div></div>
+    <div class="num">mastery 62%</div>
+  </div>
+  <div class="anvil">
+    <div class="orb" style="background:#C8892B;color:#F7F1E2">8</div>
+    <div class="plus">+</div>
+    <div class="orb" style="background:#7A8C6B;color:#F7F1E2">4</div>
+  </div>
+  <div class="tray">
+    <div class="ore">3</div><div class="ore">8</div><div class="ore">5</div><div class="ore">4</div><div class="ore">7</div>
+  </div>
+  <div class="cta">Call it</div>
+</div>
+</body></html>

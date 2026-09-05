@@ -1,0 +1,113 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════════
+   NUMBERSMITH, "Toybox"
+   Warm paper, thick charcoal ink, hard offset shadows, saturated
+   toy colour. Built to read as a physical thing a child could pick
+   up, not as a piece of software.
+   ═══════════════════════════════════════════════════════════════ */
+
+@theme {
+  /* ── surfaces ── */
+  --color-paper:   #FBF0DC;
+  --color-card:    #FFFDF6;
+  --color-shade:   #F1E3C8;
+  --color-dot:     #DFCCA7;
+
+  /* ── ink ── */
+  --color-ink:     #23180F;
+  --color-ink-mid: #6B5A44;
+  --color-ink-dim: #96866C;
+
+  /* ── the toy palette ── */
+  --color-tomato:   #FF5C39;
+  --color-marigold: #FFB627;
+  --color-teal:     #2EC4B6;
+  --color-plum:     #7B2CBF;
+  --color-leaf:     #58B368;
+  --color-berry:    #E8336D;
+  --color-sky:      #3FA9F5;
+  --color-cream:    #FFF3DC;
+
+  --font-display: 'Outfit', ui-rounded, system-ui, sans-serif;
+  --font-sans: 'Nunito', system-ui, -apple-system, sans-serif;
+
+  --radius-toy: 20px;
+  --radius-blob: 28px;
+}
+
+/* ── hard offset shadows: the signature of the whole look ── */
+@utility hard-1 { box-shadow: 3px 3px 0 var(--color-ink); }
+@utility hard-2 { box-shadow: 4px 4px 0 var(--color-ink); }
+@utility hard-3 { box-shadow: 6px 6px 0 var(--color-ink); }
+@utility hard-4 { box-shadow: 8px 8px 0 var(--color-ink); }
+@utility hard-none { box-shadow: 0 0 0 var(--color-ink); }
+
+/* ── the repeated "cut from card" element ── */
+@utility ink {
+  border: 3px solid var(--color-ink);
+}
+@utility ink-thick {
+  border: 4px solid var(--color-ink);
+}
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+  * { margin: 0; padding: 0; }
+
+  html, body, #root { height: 100%; }
+
+  body {
+    font-family: var(--font-sans);
+    font-weight: 700;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+  svg { display: block; }
+}
+
+/* ── printed dot texture, so the paper reads as paper ── */
+.paper-dots {
+  background-image: radial-gradient(var(--color-dot) 1.4px, transparent 1.4px);
+  background-size: 16px 16px;
+}
+
+/* ── press-down interaction: the shadow collapses as it's pushed ── */
+.pressable {
+  transition: transform .09s ease, box-shadow .09s ease;
+}
+.pressable:active:not(:disabled) {
+  transform: translate(4px, 4px);
+  box-shadow: 0 0 0 var(--color-ink) !important;
+}
+
+.scroll { overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--color-ink-dim) transparent; }
+.scroll::-webkit-scrollbar { width: 12px; }
+.scroll::-webkit-scrollbar-thumb { background: var(--color-ink-dim); border-radius: 99px; border: 3px solid var(--color-paper); }
+.scroll::-webkit-scrollbar-track { background: transparent; }
+
+@keyframes wobble {
+  0%, 100% { transform: rotate(-1.2deg); }
+  50%      { transform: rotate(1.2deg); }
+}
+.wobble { animation: wobble 2.6s ease-in-out infinite; }
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+.bob { animation: bob 2.8s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

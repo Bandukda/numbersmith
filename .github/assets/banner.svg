@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" width="1200" height="300" role="img" aria-label="Numbersmith">
+  <defs>
+    <pattern id="dots" width="26" height="26" patternUnits="userSpaceOnUse">
+      <circle cx="3" cy="3" r="2.2" fill="#DFCCA7"/>
+    </pattern>
+    <style>
+      .t { font-family: Verdana, DejaVu Sans, sans-serif; font-weight: 900; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="300" rx="28" fill="#FBF0DC"/>
+  <rect width="1200" height="300" rx="28" fill="url(#dots)"/>
+
+  <!-- title -->
+  <text class="t" x="600" y="132" text-anchor="middle" font-size="82" fill="#23180F" letter-spacing="2">NUMBERSMITH</text>
+  <text class="t" x="600" y="176" text-anchor="middle" font-size="25" fill="#6B5A44">Add it! Subtract it! Multiply it! Divide it!</text>
+
+  <!-- the five actions, in the game's own colours -->
+  <g class="t" font-size="19" text-anchor="middle">
+    <g>
+      <rect x="196" y="212" width="146" height="50" rx="25" fill="#FFB627" stroke="#23180F" stroke-width="4"/>
+      <text x="269" y="244" fill="#23180F">ADD</text>
+    </g>
+    <g>
+      <rect x="358" y="212" width="146" height="50" rx="25" fill="#58B368" stroke="#23180F" stroke-width="4"/>
+      <text x="431" y="244" fill="#23180F">SUBTRACT</text>
+    </g>
+    <g>
+      <rect x="520" y="212" width="146" height="50" rx="25" fill="#7B2CBF" stroke="#23180F" stroke-width="4"/>
+      <text x="593" y="244" fill="#FFFDF6">MULTIPLY</text>
+    </g>
+    <g>
+      <rect x="682" y="212" width="146" height="50" rx="25" fill="#2EC4B6" stroke="#23180F" stroke-width="4"/>
+      <text x="755" y="244" fill="#23180F">DIVIDE</text>
+    </g>
+    <g>
+      <rect x="844" y="212" width="146" height="50" rx="25" fill="#FF5C39" stroke="#23180F" stroke-width="4"/>
+      <text x="917" y="244" fill="#FFFDF6">FRACTIONS</text>
+    </g>
+  </g>
+</svg>
