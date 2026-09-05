@@ -249,9 +249,14 @@ browser. **Never build with a key baked in and then host it publicly.** Vite inl
 `VITE_*` variables into the bundle, where anyone can read them.
 
 The payload is deliberately small enough to read at a glance, and the screen will show it
-to you before you send anything. **No name, no answers the child gave, nothing
-identifying.** Just mastery per grade band, skill labels, and what the misconceptions
+to you before you send anything. **No answers the child gave, nothing identifying, and not
+even their name.** Just mastery per grade band, skill labels, and what the misconceptions
 were.
+
+The report still greets the child by name. The model writes a `{{NAME}}` token and is never
+told what it stands for; Numbersmith fills it in on the device after the reply comes back.
+A name is the one genuinely identifying field in the whole payload, and it turns out the
+model does not need it to do the job.
 
 
 ## The other modes

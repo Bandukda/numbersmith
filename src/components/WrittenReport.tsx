@@ -3,7 +3,7 @@ import { useRef, useState } from 'react'
 import { Button, Card, Kicker } from './ui'
 import { Icon } from './Icon'
 import { useGame } from '../state/store'
-import { buildSnapshot, buildPrompt } from '../engine/report'
+import { buildSnapshot, buildPrompt, personalise } from '../engine/report'
 import { writeReport, hasKey, setKey, ReportError } from '../ai/deepseek'
 
 /*
@@ -22,6 +22,7 @@ export function WrittenReport() {
   const day = useGame((s) => s.day)
   const totalForges = useGame((s) => s.totalForges)
   const bestStreak = useGame((s) => s.bestStreak)
+  const playerName = useGame((s) => s.playerName)
 
   const [text, setText] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -40,7 +41,8 @@ export function WrittenReport() {
     abort.current?.abort()
     abort.current = new AbortController()
     try {
-      setText(await writeReport(buildPrompt(snapshot), abort.current.signal))
+      const written = await writeReport(buildPrompt(snapshot), abort.current.signal)
+      setText(personalise(written, playerName))
     } catch (e) {
       setError(e instanceof ReportError ? e.message : 'Something went wrong. Try again.')
     } finally {
@@ -134,9 +136,11 @@ export function WrittenReport() {
         {showData && (
           <>
             <p className="mt-2 text-xs leading-snug text-ink-mid">
-              Sent to DeepSeek: the summary below. No name, no answers your child
-              gave, nothing that identifies them. Everything else in Numbersmith
-              stays on this device.
+              Sent to DeepSeek: the summary below, and nothing else. No answers
+              your child gave, and <strong className="text-ink">not even their
+              name</strong>. The summary comes back with a blank where the name
+              goes, and Numbersmith fills it in here on this device, so the
+              report reads personally without the name ever being sent.
             </p>
             <pre className="ink mt-2 max-h-56 overflow-auto rounded-xl bg-shade p-3 text-[11px] leading-snug">
               {JSON.stringify(snapshot, null, 2)}

@@ -8,6 +8,7 @@ import { checkWay, wayKey, applyOp, unlockedOps, countWays, pickTarget, ALL_OPS,
 import { buildRound, pickTeachSkill, teachableSkills, TEACH_THRESHOLD, didWhat } from '../src/engine/apprentice'
 import { answerChoices, openForgeTray, CHOICE_COUNT } from '../src/engine/choices'
 import { article } from '../src/engine/format'
+import { personalise } from '../src/engine/report'
 import { bands } from '../src/components/stages/AreaModel'
 import { cheerFor, wrapCheer } from '../src/components/Hero'
 import type { SkillState } from '../src/engine/types'
@@ -1064,6 +1065,41 @@ ok('no skill label ends on an adjective with nothing to describe',
 ok('nothing a child reads says "pieces means"',
    Object.values(MISCONCEPTIONS).every(m => !/pieces means/.test(m.kidLine)) &&
    BUGS.every(b => !/pieces means/.test(b.blurb) && !/pieces means/.test(b.didWhat)))
+
+/* ── the name never leaves the device ──────────────────────── */
+section('Name substitution')
+
+/*
+  The model writes {{NAME}} and is never told what it stands for. That
+  keeps the one genuinely identifying field out of the payload while the
+  report still reads as though written about a named child. The risk is
+  the reverse: a placeholder that survives into what a parent reads.
+*/
+
+ok('the placeholder is replaced with the name',
+   personalise('Great week for {{NAME}}. {{NAME}} is doing well.', 'Ada')
+     === 'Great week for Ada. Ada is doing well.')
+
+// Models reformat placeholders: spaces creep in, a brace goes missing.
+ok('a reformatted placeholder is still replaced',
+   ['{{NAME}}', '{{ NAME }}', '{NAME}', '{{name}}', '{ name }', '{{Name}}']
+     .every(tok => personalise(`Hello ${tok}!`, 'Ada') === 'Hello Ada!'),
+   ['{{NAME}}', '{{ NAME }}', '{NAME}', '{{name}}', '{ name }', '{{Name}}']
+     .filter(tok => personalise(`Hello ${tok}!`, 'Ada') !== 'Hello Ada!').join(' '))
+
+ok('no brace ever survives into what a parent reads',
+   ['{{NAME}}', '{{ NAME }}', '{NAME}', '{{name}}']
+     .every(tok => !/[{}]/.test(personalise(`Hi ${tok}, well done.`, 'Ada'))))
+
+ok('a child who skipped the name field still gets a readable report',
+   personalise('Great week for {{NAME}}.', '') === 'Great week for your child.' &&
+   personalise('Great week for {{NAME}}.', '   ') === 'Great week for your child.')
+
+ok('a report with no placeholder is left alone',
+   personalise('Your child is doing well.', 'Ada') === 'Your child is doing well.')
+
+ok('names with spaces and punctuation survive',
+   personalise('{{NAME}} did well.', "Mary-Anne") === 'Mary-Anne did well.')
 
 console.log(`\n\x1b[1m${fail === 0 ? '\x1b[32mALL PASS' : '\x1b[31mFAILURES'}\x1b[0m  ${pass} passed, ${fail} failed\n`)
 process.exit(fail ? 1 : 0)

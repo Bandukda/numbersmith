@@ -77,7 +77,13 @@ export function buildPrompt(s: ReportSnapshot): string {
     'aged 5 to 11 who has been using a maths practice game.',
     '',
     'Write 3 short paragraphs, no headings, no bullet points, no markdown.',
-    'Speak plainly and warmly to the grown-up, calling the learner "your child".',
+    'Speak plainly and warmly to the grown-up.',
+    '',
+    'Refer to the learner by writing the literal token {{NAME}} wherever their',
+    'name belongs. Write {{NAME}} exactly, with both pairs of braces, and do',
+    'not guess at or invent a name: you have not been told it and never will',
+    'be. Use it two or three times at most, the way anyone would use a name in',
+    'a note, and use "they" the rest of the time.',
     'Paragraph 1: what is going well, naming specific skills.',
     'Paragraph 2: the one or two things to work on, and if a misconception is',
     'listed, explain in plain words what the child is actually doing wrong and',
@@ -96,4 +102,24 @@ export function buildPrompt(s: ReportSnapshot): string {
     'DATA:',
     JSON.stringify(s, null, 2),
   ].join('\n')
+}
+
+/**
+ * Put the child's name back into the finished report.
+ *
+ * The model writes {{NAME}} and never learns what it stands for, so the
+ * report reads as though it were written about a named child while the
+ * name itself stays on this device. That is not a trick for its own sake:
+ * a name is the one genuinely identifying thing in this whole payload,
+ * and it turns out the model does not need it to do the job.
+ *
+ * The token is matched loosely because models reformat placeholders:
+ * spaces creep inside the braces, or one pair goes missing.
+ */
+export function personalise(text: string, name: string): string {
+  const who = name.trim() || 'your child'
+  const filled = text.replace(/\{\{?\s*NAME\s*\}?\}/gi, who)
+  // Belt and braces: if the model ignored the token entirely, the report
+  // still reads correctly, just without the name.
+  return filled.replace(/\{+\s*name\s*\}+/gi, who)
 }
