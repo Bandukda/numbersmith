@@ -1155,6 +1155,23 @@ ok('an unlock rule is never satisfied before it should be',
      return !isUnlocked(h, n - 1, 0, 0) && isUnlocked(h, n, 0, 0)
    }))
 
+/*
+  The cloud's tail has to reach the speaker's face. Two things move it:
+  the cloud grows downward for a longer cheer, and faces sit at different
+  heights in their own drawings. Both are compensated in the layout, so
+  what is checked here is that the roster carries a sane offset for each.
+*/
+ok('every hero records where its face sits',
+   HEROES.every(h => Number.isFinite(h.headDrop) && Math.abs(h.headDrop) <= 40),
+   HEROES.filter(h => !Number.isFinite(h.headDrop) || Math.abs(h.headDrop) > 40)
+     .map(h => `${h.name}=${h.headDrop}`).join(','))
+
+ok('the standard build needs no correction',
+   HERO_BY_ID[STARTER_HERO]!.headDrop === 0)
+
+ok('only the heroes drawn differently carry an offset',
+   HEROES.filter(h => h.headDrop !== 0).length <= 7)
+
 ok('every hero has a voice of its own',
    HEROES.every(h => h.cheers.length >= 5 && h.named.length >= 5) &&
    new Set(HEROES.map(h => h.cheers[0])).size === HEROES.length)

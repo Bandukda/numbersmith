@@ -71,7 +71,17 @@ export function Hero({ show, seed, name, heroId }: {
           */}
           <motion.div
             className="shrink-0"
-            style={{ marginTop: 34 }}
+            /*
+              Dropped so the face meets the cloud's tail, which measurement
+              showed was landing 28px low: the hero appeared to be talking
+              out of their chest.
+
+              Two terms, because two things move it. The cloud grows
+              downward for a longer cheer, taking its tail with it, so the
+              hero follows by the same amount. And faces are not all at
+              the same height in their own drawings.
+            */
+            style={{ marginTop: 62 + 98 * (bubbleScale(cheer) - 1) + hero.headDrop }}
             initial={{ rotate: -84 }}
             animate={{ rotate: [-84, -84, -34, 7, -3, 0] }}
             transition={{
@@ -125,8 +135,14 @@ export function cheerSize(text: string): number {
  */
 export function bubbleScale(text: string): number {
   const n = text.trim().length
-  if (n > 24) return 1.42
-  if (n > 16) return 1.2
+  /*
+    Kept modest on purpose. The cloud grows downward, so the further it
+    grows the further its tail drops below the hero's head. A gentler
+    ramp keeps the tail pointing where it should at every length, and the
+    taller cloud shape means the words no longer need much more room.
+  */
+  if (n > 24) return 1.22
+  if (n > 16) return 1.1
   return 1
 }
 
