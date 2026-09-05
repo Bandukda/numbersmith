@@ -11,6 +11,7 @@ import { OpenForge } from './components/OpenForge'
 import { Apprentice } from './components/Apprentice'
 import { RepairScene } from './components/RepairScene'
 import { StrategyPicker } from './components/StrategyPicker'
+import { HeroPicker } from './components/HeroPicker'
 import { setAudioEnabled, armAudioOnFirstGesture } from './audio/sound'
 
 export default function App() {
@@ -29,6 +30,7 @@ export default function App() {
         {screen === 'forge' && <ForgeScreen />}
         {screen === 'constellation' && <Constellation />}
         {screen === 'bugs' && <BugJar />}
+        {screen === 'heroes' && <HeroPicker />}
         {screen === 'open' && <OpenForge />}
         {screen === 'teach' && <Apprentice />}
         {screen === 'dashboard' && <Dashboard />}

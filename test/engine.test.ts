@@ -10,7 +10,8 @@ import { answerChoices, openForgeTray, CHOICE_COUNT } from '../src/engine/choice
 import { article } from '../src/engine/format'
 import { personalise } from '../src/engine/report'
 import { bands } from '../src/components/stages/AreaModel'
-import { cheerFor, cheerSize } from '../src/components/Hero'
+import { cheerSize } from '../src/components/Hero'
+import { HEROES, HERO_BY_ID, STARTER_HERO, cheerFrom, isUnlocked, unlockedHeroes, unlockHint } from '../src/engine/heroes'
 import type { SkillState } from '../src/engine/types'
 
 let pass = 0, fail = 0
@@ -830,21 +831,30 @@ ok('every multi-digit multiplication can be split into known facts',
 section('Cheers')
 
 ok('a child with no name never sees an empty slot',
-   Array.from({ length: 40 }, (_, n) => cheerFor(n, ''))
+   Array.from({ length: 40 }, (_, n) => cheerFrom(HERO_BY_ID[STARTER_HERO]!, n, ''))
      .every(c => !c.includes('{n}') && !/,\s*!/.test(c) && c.trim().length > 3))
 
 ok('whitespace typed as a name is treated as no name',
-   cheerFor(0, '   ') === cheerFor(0, ''))
+   cheerFrom(HERO_BY_ID[STARTER_HERO]!, 0, '   ') === cheerFrom(HERO_BY_ID[STARTER_HERO]!, 0, ''))
 
-ok('a named child hears their name, but only every other time',
-   (() => {
-     const cs = Array.from({ length: 24 }, (_, n) => cheerFor(n, 'Ada'))
+// Roughly half, not exactly half: each hero has its own number of lines,
+// so the alternation lands differently per roster. The property that
+// matters is that the name is used often enough to feel personal and
+// rarely enough not to grate.
+ok('every hero uses the name about half the time',
+   HEROES.every(h => {
+     const cs = Array.from({ length: 60 }, (_, n) => cheerFrom(h, n, 'Ada'))
      const named = cs.filter(c => c.includes('Ada')).length
-     return named === 12 && cs.every(c => !c.includes('{n}'))
-   })())
+     return named >= 24 && named <= 36 && cs.every(c => !c.includes('{n}'))
+   }),
+   HEROES.filter(h => {
+     const cs = Array.from({ length: 60 }, (_, n) => cheerFrom(h, n, 'Ada'))
+     const named = cs.filter(c => c.includes('Ada')).length
+     return !(named >= 24 && named <= 36)
+   }).map(h => h.name).join(','))
 
 ok('the cheer changes from one forge to the next',
-   Array.from({ length: 12 }, (_, n) => cheerFor(n, 'Ada'))
+   Array.from({ length: 12 }, (_, n) => cheerFrom(HERO_BY_ID[STARTER_HERO]!, n, 'Ada'))
      .every((c, i, all) => i === 0 || c !== all[i - 1]))
 
 /*
@@ -853,15 +863,15 @@ ok('the cheer changes from one forge to the next',
   far enough for the longest cheer a long name can produce.
 */
 ok('a long name steps the cheer down to the smallest size',
-   cheerSize(cheerFor(0, 'Konstantinos')) === 13,
-   `${cheerFor(0, 'Konstantinos')} -> ${cheerSize(cheerFor(0, 'Konstantinos'))}`)
+   cheerSize(cheerFrom(HERO_BY_ID[STARTER_HERO]!, 0, 'Konstantinos')) === 13,
+   `${cheerFrom(HERO_BY_ID[STARTER_HERO]!, 0, 'Konstantinos')} -> ${cheerSize(cheerFrom(HERO_BY_ID[STARTER_HERO]!, 0, 'Konstantinos'))}`)
 
 ok('a short cheer keeps the big size',
    cheerSize('Nice work!') === 18)
 
 ok('every cheer any name can produce gets a size that fits',
    ['', 'Ada', 'Alexandra', 'Konstantinos'].every(name =>
-     Array.from({ length: 24 }, (_, n) => cheerFor(n, name)).every(c => {
+     Array.from({ length: 24 }, (_, n) => cheerFrom(HERO_BY_ID[STARTER_HERO]!, n, name)).every(c => {
        const size = cheerSize(c)
        // rough width of the widest line at that size, against the 118px panel
        return c.length * size * 0.52 <= 118 * 2.2
@@ -1074,6 +1084,75 @@ ok('a report with no placeholder is left alone',
 
 ok('names with spaces and punctuation survive',
    personalise('{{NAME}} did well.', "Mary-Anne") === 'Mary-Anne did well.')
+
+/* ── the hero roster ───────────────────────────────────────── */
+section('Hero roster')
+
+ok('ten heroes, all with unique ids and names',
+   HEROES.length === 10 &&
+   new Set(HEROES.map(h => h.id)).size === 10 &&
+   new Set(HEROES.map(h => h.name)).size === 10)
+
+ok('exactly one hero is there from the start',
+   HEROES.filter(h => h.unlock.kind === 'start').length === 1 &&
+   HEROES[0]!.id === STARTER_HERO)
+
+ok('a brand new child has exactly one hero',
+   unlockedHeroes(0, 0, 0).length === 1)
+
+/*
+  Every gate is on unaided work. The streak resets on a hint or a miss,
+  medals only come from crossing mastery, and a creature is only caught
+  by three clean answers. So the roster cannot be farmed by tapping
+  through easy questions, which is the whole reason it is allowed to be
+  a collection at all.
+*/
+ok('no hero unlocks from mere volume',
+   HEROES.every(h => ['start', 'streak', 'medals', 'bugs'].includes(h.unlock.kind)))
+
+ok('the roster unlocks gradually, never all at once',
+   (() => {
+     const counts = [0, 3, 5, 8, 12].map(st => unlockedHeroes(st, 0, 0).length)
+     return counts.every((c, i) => i === 0 || c >= counts[i - 1]!) &&
+            counts[counts.length - 1]! < HEROES.length
+   })())
+
+ok('everything is reachable by a child who gets there',
+   unlockedHeroes(99, 99, 99).length === HEROES.length)
+
+ok('every hero explains how to earn them, in a child\u2019s words',
+   HEROES.every(h => {
+     const hint = unlockHint(h)
+     return hint.length > 6 && !/undefined|NaN|\{/.test(hint)
+   }),
+   HEROES.filter(h => /undefined|NaN|\{/.test(unlockHint(h))).map(h => h.name).join(','))
+
+ok('an unlock rule is never satisfied before it should be',
+   HEROES.filter(h => h.unlock.kind === 'streak').every(h => {
+     const n = (h.unlock as { n: number }).n
+     return !isUnlocked(h, n - 1, 0, 0) && isUnlocked(h, n, 0, 0)
+   }))
+
+ok('every hero has a voice of its own',
+   HEROES.every(h => h.cheers.length >= 5 && h.named.length >= 5) &&
+   new Set(HEROES.map(h => h.cheers[0])).size === HEROES.length)
+
+ok('every named line has a slot for the name',
+   HEROES.every(h => h.named.every(l => l.includes('{n}'))),
+   HEROES.filter(h => h.named.some(l => !l.includes('{n}'))).map(h => h.name).join(','))
+
+ok('no plain line has a leftover slot',
+   HEROES.every(h => h.cheers.every(l => !l.includes('{n}'))))
+
+ok('every cheer fits the bubble, for every hero and a long name',
+   HEROES.every(h => Array.from({ length: 40 }, (_, n) => cheerFrom(h, n, 'Konstantinos'))
+     .every(c => { const size = cheerSize(c); return c.length * size * 0.52 <= 118 * 2.2 })),
+   HEROES.filter(h => Array.from({ length: 40 }, (_, n) => cheerFrom(h, n, 'Konstantinos'))
+     .some(c => c.length * cheerSize(c) * 0.52 > 118 * 2.2)).map(h => h.name).join(','))
+
+ok('a hero always speaks, whatever the counter',
+   ([NaN, undefined, null, Infinity, -4] as unknown as number[])
+     .every(n => HEROES.every(h => cheerFrom(h, n, 'Ada').trim().length > 3)))
 
 console.log(`\n\x1b[1m${fail === 0 ? '\x1b[32mALL PASS' : '\x1b[31mFAILURES'}\x1b[0m  ${pass} passed, ${fail} failed\n`)
 process.exit(fail ? 1 : 0)

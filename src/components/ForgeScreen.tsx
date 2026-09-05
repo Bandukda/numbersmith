@@ -8,6 +8,8 @@ import { currentMastery, freshState } from '../engine/mastery'
 import { AnswerChoice } from './AnswerChoice'
 import { Sparks, AwardFloat } from './Sparks'
 import { Hero } from './Hero'
+import { HeroArt } from './HeroArt'
+import { HERO_BY_ID } from '../engine/heroes'
 import { Icon, VERB_ICON } from './Icon'
 import { Button, Kicker, Meter, Chip } from './ui'
 import { BugCreature } from './BugCreature'
@@ -37,6 +39,8 @@ export function ForgeScreen() {
   const useHint = useGame((s) => s.useHint)
   const finishForge = useGame((s) => s.finishForge)
   const playerName = useGame((s) => s.playerName)
+  const activeHero = useGame((s) => s.activeHero)
+  const justUnlockedHero = useGame((s) => s.justUnlockedHero)
   const inWarmup = useGame((s) => s.inWarmup)
   const warmup = useGame((s) => s.warmup)
   const warmupTotal = useGame((s) => s.warmupTotal)
@@ -210,7 +214,7 @@ export function ForgeScreen() {
               */
               className="min-w-0 overflow-x-clip"
             >
-              <Hero show={forged} seed={celebrate} name={playerName} />
+              <Hero show={forged} seed={celebrate} name={playerName} heroId={activeHero} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -282,7 +286,7 @@ export function ForgeScreen() {
         {lastAward && forged && <AwardFloat amount={lastAward.sparks} label={lastAward.label} />}
 
         <AnimatePresence>
-          {justCaught && speciesOf(justCaught) && (
+          {justCaught && speciesOf(justCaught) && !justUnlockedHero && (
             <motion.div
               initial={{ y: 70, opacity: 0, scale: 0.6 }}
               animate={{ y: 0, opacity: 1, scale: 1, rotate: -1.5 }}
@@ -299,7 +303,27 @@ export function ForgeScreen() {
               </div>
             </motion.div>
           )}
-          {justMastered && !justCaught && (
+          {/* a new hero joining is the biggest thing that can happen, so
+              it takes the stage ahead of a bug or a star */}
+          {justUnlockedHero && HERO_BY_ID[justUnlockedHero] && (
+            <motion.div
+              key="hero-unlock"
+              initial={{ y: 70, opacity: 0, scale: 0.6 }}
+              animate={{ y: 0, opacity: 1, scale: 1, rotate: -1.5 }}
+              exit={{ y: -24, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 16 }}
+              className="ink-thick hard-4 absolute bottom-4 z-45 flex items-center gap-4 rounded-blob bg-marigold px-7 py-3.5"
+            >
+              <HeroArt hero={HERO_BY_ID[justUnlockedHero]!} landed size={52} />
+              <div>
+                <Kicker>A new hero joined you!</Kicker>
+                <div className="font-display text-lg font-black leading-tight">
+                  {HERO_BY_ID[justUnlockedHero]!.name} is here!
+                </div>
+              </div>
+            </motion.div>
+          )}
+          {justMastered && !justCaught && !justUnlockedHero && (
             <motion.div
               initial={{ y: 60, opacity: 0, rotate: 6 }}
               animate={{ y: 0, opacity: 1, rotate: -1.5 }}

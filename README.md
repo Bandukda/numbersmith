@@ -294,9 +294,24 @@ marker sits.
 100 + 50 + 70 + 35. That's how 4.NBT.B.5 is actually taught, and every part is a fact you
 already own.
 
-**Captain Number.** Get one right and a caped hero flies in from off-screen, lands, and
-holds up a comic bubble with your name in it. Only every other cheer uses the name,
-because hearing it every single time wears out fast.
+**The hero roster.** Get one right and your chosen hero flies in from off-screen, lands,
+and holds up a comic bubble with your name in it. Ten heroes, each one a number idea
+wearing a cape: **Double Trouble** is two of herself, **Big Ten** is a countable stack of
+ten blocks, **Carry** hauls a spare ten-rod on her back, **Prime** is a shield that cannot
+be divided, **Glimmer** is a spark.
+
+They join one at a time and **every gate is on unaided work**, a run of clean answers,
+medals crossed, creatures caught. None of those can be farmed by tapping through easy
+questions, which is the only reason a collection is allowed here at all. The research on
+rewards is blunt about children: an expected prize for something they already find
+interesting reduces the wanting. What survives that is a reward the learning *is*, rather
+than a token bolted beside it.
+
+Then the part that does the real work: **the child picks who cheers them on.** Choosing is
+not a prize, it is a say in their own game, and each hero cheers in their own voice.
+Captain Number says *"Well done!"*; Big Ten says *"That... was... solid."*; Glimmer says
+*"You did it you did it YOU DID IT!"* Locked heroes are shown as silhouettes with what it
+takes to earn them, because a goal is worth more than an empty space.
 
 ---
 

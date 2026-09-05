@@ -13,10 +13,11 @@ import {
 } from '../engine/openforge'
 import { type Round, buildRound, pickTeachSkill, TEACH_SPARKS } from '../engine/apprentice'
 import { SPARKS, HINT_COST, hintCharge } from '../engine/strategies'
+import { unlockedHeroes, STARTER_HERO } from '../engine/heroes'
 import type { Order, SkillState, Grade } from '../engine/types'
 import * as S from '../audio/sound'
 
-export type Screen = 'title' | 'forge' | 'constellation' | 'dashboard' | 'bugs' | 'open' | 'teach'
+export type Screen = 'title' | 'forge' | 'constellation' | 'dashboard' | 'bugs' | 'open' | 'teach' | 'heroes'
 export type Phase =
   | 'building'    // arranging the physical structure on the anvil
   | 'calling'     // entering the predicted value
@@ -70,6 +71,10 @@ interface Game {
   sparks: number
   /** What the child likes to be called. Optional, and never leaves the device. */
   playerName: string
+  /** Which hero turns up to cheer. The child's pick. */
+  activeHero: string
+  /** A hero that has just joined, so the forge can announce it once. */
+  justUnlockedHero: string | null
   ingots: number
   /** Simulated day counter, drives the forgetting curve. */
   day: number
@@ -122,6 +127,7 @@ interface Game {
   setPhase: (p: Phase) => void
   submitChoice: (value: number) => void
   setPlayerName: (n: string) => void
+  setActiveHero: (id: string) => void
   finishForge: () => void
   useHint: () => void
   submitTemper: (slices: number, taken: number) => void
@@ -154,6 +160,8 @@ export const useGame = create<Game>()(
       bugs: {},
       sparks: 0,
       playerName: '',
+      activeHero: STARTER_HERO,
+      justUnlockedHero: null,
       ingots: 0,
       day: 0,
       bestWays: 0,
@@ -225,6 +233,7 @@ export const useGame = create<Game>()(
           attemptsThisOrder: 0,
           justSpawnedBug: null,
           justCaughtBug: null,
+          justUnlockedHero: null,
           recent: [...recent, skill.id].slice(-6),
         })
       },
@@ -246,6 +255,8 @@ export const useGame = create<Game>()(
         overflow the cloud or shrink the cheer to nothing.
       */
       setPlayerName: (n: string) => set({ playerName: n.slice(0, 12) }),
+
+      setActiveHero: (id: string) => set({ activeHero: id }),
 
       finishForge: () => {
         if (get().phase !== 'forged') return
@@ -575,6 +586,7 @@ export const useGame = create<Game>()(
       resetAll: () => set({
         states: initialStates(), bugs: {}, sparks: 0, ingots: 0, day: 0, badges: [], playerName: '',
         bestWays: 0, taught: 0, open: null, teach: null, hintUsed: false, attemptsThisOrder: 0,
+        activeHero: STARTER_HERO, justUnlockedHero: null,
         warmup: [], warmupTotal: 0, inWarmup: false,
         totalForges: 0, bestStreak: 0, streak: 0, screen: 'title',
         order: null, recent: [], called: '', misconception: null,
@@ -590,6 +602,7 @@ export const useGame = create<Game>()(
         bestWays: s.bestWays, taught: s.taught,
         badges: s.badges, totalForges: s.totalForges, bestStreak: s.bestStreak,
         gradeFilter: s.gradeFilter, soundOn: s.soundOn, playerName: s.playerName,
+        activeHero: s.activeHero,
       }),
     }))
 
@@ -647,6 +660,14 @@ function resolveCorrect(set: Set_, get: Get_) {
     }
   }
 
+  /*
+    A hero joins on unaided work only: a run of clean answers, medals,
+    or creatures caught. All three are already impossible to grind, so
+    the roster cannot be farmed by tapping through easy questions.
+  */
+  const bugsCaughtBefore = Object.values(bugs).filter((b) => b.caught).length
+  const heroesBefore = unlockedHeroes(bestStreak, ingots, bugsCaughtBefore).length
+
   const prev = states[order.skillId] ?? freshState()
   const before = currentMastery(prev, day)
   const next: SkillState = {
@@ -679,6 +700,15 @@ function resolveCorrect(set: Set_, get: Get_) {
     justCaughtBug: caughtNow,
     celebrate: get().celebrate + 1,
     attemptsThisOrder: attemptsThisOrder + 1,
+    justUnlockedHero: (() => {
+      const caughtAfter = Object.values(nextBugs).filter((b) => b.caught).length
+      const after = unlockedHeroes(
+        Math.max(bestStreak, newStreak),
+        ingots + (crossedMastery ? 1 : 0),
+        caughtAfter,
+      )
+      return after.length > heroesBefore ? after[after.length - 1]!.id : null
+    })(),
     lastAward: caughtNow
       ? { sparks: (firstTry ? SPARKS.forge : SPARKS.repair) + SPARKS.catch, label: 'Bug caught!' }
       : firstTry
