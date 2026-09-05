@@ -880,6 +880,28 @@ ok('every named cheer can actually appear',
    })(),
    `only ${new Set(Array.from({ length: 480 }, (_, n) => cheerFor(n, 'Ada')).filter(c => c.includes('Ada'))).size} of 12 reachable`)
 
+/*
+  A speech bubble with nothing in it is the failure mode here: the hero
+  flies in, holds up an empty cloud and says nothing. Anything that could
+  index the cheer list with a non-number has to still produce a line.
+*/
+ok('a broken counter still produces a cheer',
+   ([NaN, undefined, null, Infinity, -Infinity, -3, 1.7] as unknown as number[])
+     .every(n => {
+       const c = cheerFor(n, 'Ada')
+       return typeof c === 'string' && c.trim().length > 3 && !c.includes('undefined')
+     }),
+   ([NaN, undefined, null, Infinity, -3] as unknown as number[])
+     .map(n => `${String(n)}=>${JSON.stringify(cheerFor(n, 'Ada'))}`).join(' '))
+
+ok('a broken name still produces a cheer',
+   ([undefined, null] as unknown as string[])
+     .every(nm => cheerFor(2, nm).trim().length > 3))
+
+ok('no cheer is ever empty, for any counter in a long session',
+   Array.from({ length: 500 }, (_, n) => cheerFor(n, 'Ada'))
+     .every(c => c.trim().length > 3 && !c.includes('{n}')))
+
 ok('every plain cheer can actually appear',
    new Set(Array.from({ length: 480 }, (_, n) => cheerFor(n, ''))).size === 12)
 

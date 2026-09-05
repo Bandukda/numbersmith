@@ -40,11 +40,20 @@ const NAMED = [
  * flips which half gets the name each time round the list.
  */
 export function cheerFor(n: number, name = ''): string {
-  const i = n % CHEERS.length
-  const pass = Math.floor(n / CHEERS.length)
-  const clean = name.trim()
-  if (!clean || (n + pass) % 2 === 1) return CHEERS[i]!
-  return NAMED[i]!.replace('{n}', clean)
+  /*
+    Guard the index rather than trusting it. A counter that arrives as
+    undefined or NaN, which a stale persisted save or a half-applied hot
+    reload can produce, would index the array with NaN and hand back
+    undefined. That renders as a speech bubble with nothing in it: the
+    hero flies in, holds up an empty cloud, and says nothing.
+  */
+  const safe = Number.isFinite(n) ? Math.abs(Math.trunc(n)) : 0
+  const i = safe % CHEERS.length
+  const pass = Math.floor(safe / CHEERS.length)
+  const clean = (name ?? '').trim()
+  const plain = CHEERS[i] ?? CHEERS[0]!
+  if (!clean || (safe + pass) % 2 === 1) return plain
+  return (NAMED[i] ?? NAMED[0]!).replace('{n}', clean)
 }
 
 /**
@@ -138,6 +147,10 @@ export function Hero({ show, seed, name }: { show: boolean; seed: number; name?:
 
 /** Comic bubble built from overlapping circles, so the edge reads as cloud. */
 function CloudBubble({ text }: { text: string }) {
+  // An empty cloud is worse than no cloud: it reads as the hero having
+  // nothing to say. If there is no line, there is no bubble.
+  if (!text || !text.trim()) return null
+
   const bumps = [
     [26, 16, 17], [58, 10, 14], [90, 15, 16], [120, 22, 13],
     [22, 52, 16], [56, 60, 15], [92, 57, 16], [122, 48, 13],
