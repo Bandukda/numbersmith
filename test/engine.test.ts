@@ -3,7 +3,7 @@ import { freshState, updateBKT, relearnBKT, RETRY_LEARN, fadingSkills, WARMUP_SI
 import { makeOrder, VERB_META } from '../src/engine/orders'
 import { analyse, smallerFromLarger, noCarrySum, MISCONCEPTIONS, DIAGNOSABLE, describeMiss } from '../src/engine/misconceptions'
 import { strategiesFor, SPARKS, HINT_COST, hintCharge } from '../src/engine/strategies'
-import { checkWay, wayKey, applyOp, unlockedOps, countWays, pickTarget, ALL_OPS, type Op } from '../src/engine/openforge'
+import { checkWay, wayKey, applyOp, unlockedOps, countWays, pickTarget, ALL_OPS, OP_LABEL, type Op } from '../src/engine/openforge'
 import { buildRound, pickTeachSkill, teachableSkills, TEACH_THRESHOLD, didWhat } from '../src/engine/apprentice'
 import { answerChoices, openForgeTray, CHOICE_COUNT } from '../src/engine/choices'
 import { article } from '../src/engine/format'
@@ -735,6 +735,20 @@ ok('no verb name or blurb uses an invented forge word',
 
 const promptOffenders = SKILLS.flatMap(sk =>
   sample(sk.id, 25).filter(o => INVENTED.test(o.prompt)).map(o => `${sk.id}:"${o.prompt}"`))
+/*
+  Your Way has its own list of names for the four operations, and this
+  test did not read it, so it went on offering "mash", "snap" and
+  "stamp" on its buttons after every other screen had stopped. Five
+  places were checked and the sixth was the one that was wrong.
+*/
+ok('no operation button in Your Way uses an invented forge word',
+   ALL_OPS.every(o => !INVENTED.test(OP_LABEL[o])),
+   ALL_OPS.filter(o => INVENTED.test(OP_LABEL[o])).map(o => `${o}:${OP_LABEL[o]}`).join(','))
+
+ok('the operation buttons are named the same as the verbs they run',
+   ALL_OPS.every(o => Object.values(VERB_META).some(m => m.name === OP_LABEL[o])),
+   ALL_OPS.map(o => `${o}:${OP_LABEL[o]}`).join(','))
+
 ok('no order prompt uses an invented forge word',
    promptOffenders.length === 0, promptOffenders.slice(0, 5).join(' '))
 

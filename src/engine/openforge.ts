@@ -1,5 +1,6 @@
 import { SKILLS } from './skills'
 import { currentMastery, freshState } from './mastery'
+import { VERB_META } from './orders'
 import type { SkillState, Verb } from './types'
 
 /**
@@ -26,8 +27,21 @@ const OP_VERB: Record<Op, Verb> = {
   '+': 'fuse', '-': 'cleave', '×': 'stamp', '÷': 'share',
 }
 
+/*
+  What the child reads on the operation buttons.
+
+  Taken from VERB_META rather than written out a second time. Written out
+  a second time is exactly what it was, and the copy kept the invented
+  forge words, so Your Way was still offering "mash", "snap" and "stamp"
+  long after every other screen had moved to add, subtract and multiply.
+  A child who learns to "mash" has learned a word that is on no worksheet
+  anywhere. One list of names means one place to be right.
+*/
 export const OP_LABEL: Record<Op, string> = {
-  '+': 'mash', '-': 'snap', '×': 'stamp', '÷': 'share',
+  '+': VERB_META[OP_VERB['+']].name,
+  '-': VERB_META[OP_VERB['-']].name,
+  '×': VERB_META[OP_VERB['×']].name,
+  '÷': VERB_META[OP_VERB['÷']].name,
 }
 
 /** Apply an operation, or null when it does not land on a whole number. */
