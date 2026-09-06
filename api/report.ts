@@ -35,6 +35,17 @@ function sameSecret(a: string, b: string): boolean {
 }
 
 export default async function handler(req: Request): Promise<Response> {
+  /*
+    The client sends a GET here on the grown-ups' page purely to find out
+    whether it is running on a deployment with a server behind it or on
+    somebody's laptop. It answers 200, not 405: the check is a normal
+    part of the page loading, and a red line in the console makes a
+    working site look broken to anyone who opens dev tools.
+
+    It says nothing about whether the key or the password are set. The
+    POST already answers that, to whoever has the password.
+  */
+  if (req.method === 'GET') return json({ ok: true })
   if (req.method !== 'POST') return json({ error: 'Use POST.' }, 405)
 
   const key = process.env.DEEPSEEK_API_KEY
