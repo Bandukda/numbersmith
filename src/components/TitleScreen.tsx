@@ -18,7 +18,6 @@ export function TitleScreen() {
   const setGradeFilter = useGame((s) => s.setGradeFilter)
   const playerName = useGame((s) => s.playerName)
   const setPlayerName = useGame((s) => s.setPlayerName)
-  const totalForges = useGame((s) => s.totalForges)
 
   const begin = () => {
     primeAudio()
@@ -32,7 +31,7 @@ export function TitleScreen() {
   ]
 
   return (
-    <div className="scroll flex-1 px-6 py-6">
+    <div className="flex-1 px-6 py-6">
       <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
         <motion.div
           initial={{ scale: 0, rotate: -25 }} animate={{ scale: 1, rotate: -6 }}
@@ -95,9 +94,21 @@ export function TitleScreen() {
           always reachable; three big buttons on the first screen made the
           child choose before they had anything to choose between.
         */}
+        {/*
+          The same words every time.
+
+          It used to say "Let's play again!" once you had forged anything,
+          which sounds friendly and is wrong more often than it is right.
+          The count it read from is saved in the browser, so it survives
+          closing the tab, and it belongs to the browser rather than to
+          the child: a new player sitting down at a machine someone else
+          has used is greeted as though they had been here before, and the
+          same child on a different device is greeted as a stranger. The
+          button cannot know, so it does not guess.
+        */}
         <motion.div whileHover={{ scale: 1.04, rotate: -1 }} className="mt-9">
           <Button color="tomato" size="lg" icon="hammer" onClick={begin}>
-            {totalForges > 0 ? "Let's play again!" : "Let's make numbers!"}
+            Let's play!
           </Button>
         </motion.div>
 
