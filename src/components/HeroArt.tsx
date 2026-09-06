@@ -44,6 +44,7 @@ function Cape({ fill, ribbons }: { fill: string; ribbons?: boolean }) {
   }
   return (
     <motion.path
+      initial={false}
       fill={fill}
       d="M34 34 C6 44 4 84 16 106 C30 92 44 92 56 96 C46 74 44 50 52 34 Z"
       animate={{ d: [
@@ -57,17 +58,33 @@ function Cape({ fill, ribbons }: { fill: string; ribbons?: boolean }) {
   )
 }
 
+/*
+  Every shape that changes between flying and standing is written twice:
+  once as a plain `d`, once inside `animate`.
+
+  Neither is redundant, and the plain one alone is not enough. Framer
+  renders SVG attributes itself, from its own store of current values,
+  and overwrites whatever React put there. With no starting value in that
+  store it writes the string "undefined" into `d`, and the browser
+  rejects the whole path. `initial={false}` is what fills the store: it
+  says "you are already at the animate value", so the first frame is the
+  real shape and later changes still animate.
+
+  Nothing looked broken, because the correct shape arrived a frame later,
+  but opening My Heroes threw sixty-one parse errors into the console
+  every single time.
+*/
 /** Legs: together and streamlined in flight, planted once standing. */
 function Legs({ colour, landed }: { colour: string; landed: boolean }) {
   return (
     <>
-      <motion.path animate={{ d: landed ? 'M44 96 L40 118' : 'M46 96 L44 120' }}
+      <motion.path initial={false} d={landed ? 'M44 96 L40 118' : 'M46 96 L44 120'} animate={{ d: landed ? 'M44 96 L40 118' : 'M46 96 L44 120' }}
                    stroke={colour} strokeWidth={11} />
-      <motion.path animate={{ d: landed ? 'M62 96 L68 116' : 'M60 96 L64 120' }}
+      <motion.path initial={false} d={landed ? 'M62 96 L68 116' : 'M60 96 L64 120'} animate={{ d: landed ? 'M62 96 L68 116' : 'M60 96 L64 120' }}
                    stroke={colour} strokeWidth={11} />
-      <motion.path animate={{ d: landed ? 'M36 118 h12' : 'M40 121 h9' }}
+      <motion.path initial={false} d={landed ? 'M36 118 h12' : 'M40 121 h9'} animate={{ d: landed ? 'M36 118 h12' : 'M40 121 h9' }}
                    strokeWidth={9} stroke="var(--color-ink)" />
-      <motion.path animate={{ d: landed ? 'M64 116 h12' : 'M60 121 h9' }}
+      <motion.path initial={false} d={landed ? 'M64 116 h12' : 'M60 121 h9'} animate={{ d: landed ? 'M64 116 h12' : 'M60 121 h9' }}
                    strokeWidth={9} stroke="var(--color-ink)" />
     </>
   )
@@ -111,7 +128,7 @@ function WavingArm({ colour, landed }: { colour: string; landed: boolean }) {
         : { duration: 0.25 }}
       style={{ transformOrigin: '70px 62px' }}
     >
-      <motion.path animate={{ d: landed ? 'M70 62 L82 52' : 'M68 58 L80 40' }}
+      <motion.path initial={false} d={landed ? 'M70 62 L82 52' : 'M68 58 L80 40'} animate={{ d: landed ? 'M70 62 L82 52' : 'M68 58 L80 40' }}
                    fill="none" stroke={colour} strokeWidth={11} />
       {landed
         ? <ThumbsUp colour={C('marigold')} />
@@ -135,7 +152,7 @@ function Standard({ hero, landed, chest }: { hero: Hero; landed: boolean; chest?
       <Legs colour={C('plum')} landed={landed} />
       <rect x={36} y={52} width={36} height={48} rx={14} fill={suit} />
       {chest}
-      <motion.path animate={{ d: landed ? 'M38 62 L26 76 L34 84' : 'M38 62 L32 82 L36 96' }}
+      <motion.path initial={false} d={landed ? 'M38 62 L26 76 L34 84' : 'M38 62 L32 82 L36 96'} animate={{ d: landed ? 'M38 62 L26 76 L34 84' : 'M38 62 L32 82 L36 96' }}
                    fill="none" stroke={suit} strokeWidth={11} />
       <WavingArm colour={suit} landed={landed} />
       <Head skin={C('marigold')} mask={C(hero.trim === 'cream' ? 'plum' : hero.trim)} />
@@ -192,9 +209,9 @@ export function HeroArt({ hero, landed, size = 130 }: Props) {
           <>
             <Cape fill={C(hero.cape)} />
             {/* short, thick legs: everything about him says heavy */}
-            <motion.path animate={{ d: landed ? 'M40 112 L36 122' : 'M42 112 L40 124' }}
+            <motion.path initial={false} d={landed ? 'M40 112 L36 122' : 'M42 112 L40 124'} animate={{ d: landed ? 'M40 112 L36 122' : 'M42 112 L40 124' }}
                          stroke={C('teal')} strokeWidth={15} />
-            <motion.path animate={{ d: landed ? 'M68 112 L72 122' : 'M66 112 L68 124' }}
+            <motion.path initial={false} d={landed ? 'M68 112 L72 122' : 'M66 112 L68 124'} animate={{ d: landed ? 'M68 112 L72 122' : 'M66 112 L68 124' }}
                          stroke={C('teal')} strokeWidth={15} />
             <path d="M28 123 h16" strokeWidth={11} />
             <path d="M64 123 h16" strokeWidth={11} />
@@ -209,7 +226,7 @@ export function HeroArt({ hero, landed, size = 130 }: Props) {
                 <rect x={55} y={46 + r * 14} width={27} height={12} rx={3} fill={suit} strokeWidth={3} />
               </g>
             ))}
-            <motion.path animate={{ d: landed ? 'M24 70 L10 86' : 'M24 70 L14 92' }}
+            <motion.path initial={false} d={landed ? 'M24 70 L10 86' : 'M24 70 L14 92'} animate={{ d: landed ? 'M24 70 L10 86' : 'M24 70 L14 92' }}
                          fill="none" stroke={suit} strokeWidth={14} />
             <WavingArm colour={suit} landed={landed} />
             {/* a small head on a big body reads as size */}
@@ -256,7 +273,7 @@ export function HeroArt({ hero, landed, size = 130 }: Props) {
             <path d="M54 46 v56" stroke={C('cream')} strokeWidth={5} />
             <circle cx={54} cy={70} r={9} fill={C('cream')} strokeWidth={3.4} />
             <path d="M54 64 v12 M48 70 h12" stroke={C('sky')} strokeWidth={3} />
-            <motion.path animate={{ d: landed ? 'M32 56 L20 70 L28 78' : 'M32 56 L26 76 L30 90' }}
+            <motion.path initial={false} d={landed ? 'M32 56 L20 70 L28 78' : 'M32 56 L26 76 L30 90'} animate={{ d: landed ? 'M32 56 L20 70 L28 78' : 'M32 56 L26 76 L30 90' }}
                          fill="none" stroke={C('sky')} strokeWidth={11} />
             <WavingArm colour={C('sky')} landed={landed} />
             <Head skin={C('marigold')} mask={C('ink-mid')} cy={28} />
@@ -277,7 +294,7 @@ export function HeroArt({ hero, landed, size = 130 }: Props) {
             <Legs colour={C('sky')} landed={landed} />
             <rect x={36} y={52} width={36} height={48} rx={14} fill={suit} />
             <path d={STAR} fill={C('plum')} strokeWidth={2.4} />
-            <motion.path animate={{ d: landed ? 'M38 62 L26 76 L34 84' : 'M38 62 L32 82 L36 96' }}
+            <motion.path initial={false} d={landed ? 'M38 62 L26 76 L34 84' : 'M38 62 L32 82 L36 96'} animate={{ d: landed ? 'M38 62 L26 76 L34 84' : 'M38 62 L32 82 L36 96' }}
                          fill="none" stroke={suit} strokeWidth={11} />
             <WavingArm colour={suit} landed={landed} />
             <Head skin={C('cream')} mask={C('plum')} />
@@ -301,7 +318,7 @@ export function HeroArt({ hero, landed, size = 130 }: Props) {
             <rect x={36} y={52} width={36} height={48} rx={14} fill={suit} />
             {/* heavy shoulders: she is built for hauling */}
             <rect x={28} y={48} width={52} height={17} rx={8.5} fill={suit} />
-            <motion.path animate={{ d: landed ? 'M34 68 L22 78' : 'M34 68 L28 86' }}
+            <motion.path initial={false} d={landed ? 'M34 68 L22 78' : 'M34 68 L28 86'} animate={{ d: landed ? 'M34 68 L22 78' : 'M34 68 L28 86' }}
                          fill="none" stroke={suit} strokeWidth={12} />
             <WavingArm colour={suit} landed={landed} />
             <Head skin={C('marigold')} mask={C('leaf')} cy={31} />
@@ -313,7 +330,7 @@ export function HeroArt({ hero, landed, size = 130 }: Props) {
             <Cape fill={C(hero.cape)} />
             <Legs colour={C('berry')} landed={landed} />
             <path d="M36 52 h36 l6 48 h-48 z" fill={suit} />
-            <motion.path animate={{ d: landed ? 'M38 62 L26 76 L34 84' : 'M38 62 L32 82 L36 96' }}
+            <motion.path initial={false} d={landed ? 'M38 62 L26 76 L34 84' : 'M38 62 L32 82 L36 96'} animate={{ d: landed ? 'M38 62 L26 76 L34 84' : 'M38 62 L32 82 L36 96' }}
                          fill="none" stroke={suit} strokeWidth={11} />
             <WavingArm colour={suit} landed={landed} />
             <Head skin={C('marigold')} mask={C('berry')} cy={32} />
@@ -339,7 +356,7 @@ export function HeroArt({ hero, landed, size = 130 }: Props) {
             <Legs colour={C('marigold')} landed={landed} />
             <rect x={36} y={52} width={36} height={48} rx={14} fill={suit} />
             <path d="M46 62 l14 0 -8 12 10 0 -16 18 5 -14 -10 0 z" fill={C('marigold')} strokeWidth={2.4} />
-            <motion.path animate={{ d: landed ? 'M38 62 L26 76 L34 84' : 'M38 62 L32 82 L36 96' }}
+            <motion.path initial={false} d={landed ? 'M38 62 L26 76 L34 84' : 'M38 62 L32 82 L36 96'} animate={{ d: landed ? 'M38 62 L26 76 L34 84' : 'M38 62 L32 82 L36 96' }}
                          fill="none" stroke={suit} strokeWidth={11} />
             <WavingArm colour={suit} landed={landed} />
             {/* goggles rather than a mask */}
