@@ -30,7 +30,7 @@ export function HeroPicker() {
   const open = HEROES.filter((h) => isUnlocked(h, bestStreak, ingots))
 
   return (
-    <div className="paper-dots scroll flex min-h-0 flex-1 flex-col items-center px-4 py-5">
+    <div className="flex min-h-0 flex-1 flex-col items-center px-4 py-5">
       <h1 className="font-display text-3xl font-black tracking-tight">My Heroes</h1>
       <p className="mt-1 max-w-md text-center text-sm leading-snug text-ink-mid">
         Pick who cheers you on. More join you as you get things right.

@@ -32,7 +32,7 @@ export function Constellation() {
   const selState = sel ? states[sel] ?? freshState() : null
 
   return (
-    <div className="paper-dots flex min-h-0 flex-1 flex-col px-6 pb-5">
+    <div className="flex min-h-0 flex-1 flex-col px-6 pb-5">
       <div className="mb-3 flex flex-wrap items-baseline gap-3 pt-4">
         <h1 className="font-display text-3xl font-black tracking-tight">My Star Map</h1>
         <span className="text-sm text-ink-mid">Light up a star for everything you learn</span>

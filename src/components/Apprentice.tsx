@@ -81,7 +81,7 @@ export function Apprentice() {
       : { good: false, title: 'Close!', body: `Pip actually ${didWhat(round.bugId!)}. The answer is ${round.order.sentence.answer}.` }
 
   return (
-    <div className="paper-dots scroll min-h-0 flex-1 px-6 pb-6">
+    <div className="flex min-h-0 flex-1 flex-col px-6 pb-6">
       <div className="mx-auto flex max-w-3xl flex-col gap-4 pt-4">
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="font-display text-3xl font-black tracking-tight">Teach Pip</h1>

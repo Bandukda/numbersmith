@@ -75,7 +75,7 @@ export function ForgeScreen() {
     : TemperStage
 
   return (
-    <div className="paper-dots scroll relative flex min-h-0 flex-1 flex-col">
+    <div className="relative flex min-h-0 flex-1 flex-col">
       {/*
         The warm-up banner. The forgetting curve has always driven what the
         game offers next; this is the first place it says so out loud.
@@ -129,31 +129,6 @@ export function ForgeScreen() {
           </motion.div>
       </div>
 
-      {/* hint + bug hunt, in flow so they can never collide with the answers */}
-      <div className="flex h-6 shrink-0 items-center justify-center gap-3 sm:h-8">
-        <AnimatePresence mode="wait">
-          {phase === 'building' && (
-            <motion.div
-              key={`${order.id}-hint`}
-              initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-            >
-              <Kicker>
-                {order.verb === 'fuse' && order.mode === 'bond'
-                  ? `Pick two numbers that make ${order.target}`
-                  : order.layers
-                    ? 'Build up the layers, then count all the cubes'
-                    : order.verb === 'temper'
-                      ? meta.blurb
-                      : `${meta.blurb}, then guess what it makes`}
-              </Kicker>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Only while the child is actually playing: during a repair or the
-            strategy question the forge chrome must not compete with the modal. */}
-      </div>
-
       {/* stage */}
       {/*
         The stage grows to fill a tall window, but never collapses below the
@@ -191,13 +166,40 @@ export function ForgeScreen() {
         </AnimatePresence>
 
         {/*
+          What to do, in the gap between the two. It used to have a row of
+          its own above this one, which stood there empty and 32px tall for
+          every phase but the first: a band of nothing across the screen
+          exactly when the screen had least room to spare.
+        */}
+        <div className="flex min-h-6 flex-1 items-end justify-center pb-2 sm:min-h-8">
+          <AnimatePresence mode="wait">
+            {phase === 'building' && (
+              <motion.div
+                key={`${order.id}-hint`}
+                initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+              >
+                <Kicker className="text-center">
+                  {order.verb === 'fuse' && order.mode === 'bond'
+                    ? `Pick two numbers that make ${order.target}`
+                    : order.layers
+                      ? 'Build up the layers, then count all the cubes'
+                      : order.verb === 'temper'
+                        ? meta.blurb
+                        : `${meta.blurb}, then guess what it makes`}
+                </Kicker>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/*
           Help sits beside the puzzle, not buried in a menu. A stuck child
           should always be able to see a way forward that is not guessing,
           and taking it costs stars rather than pride. The price is on the
           button so spending is a choice the child makes with their eyes
           open, not a smaller reward they never notice arriving.
         */}
-        <div className="ml-auto shrink-0 pb-2">
+        <div className="shrink-0 pb-2">
           <AnimatePresence>
             {canHint && (
               <motion.div

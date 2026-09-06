@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useGame } from '../state/store'
 import { unlockedOps, OP_LABEL, type Op } from '../engine/openforge'
 import { openForgeTray } from '../engine/choices'
@@ -22,6 +22,7 @@ const OP_COLOUR: Record<Op, string> = {
  * breadth of thinking rather than repetition of one trick.
  */
 export function OpenForge() {
+  const ways = useRef<HTMLDivElement>(null)
   const open = useGame((s) => s.open)
   const states = useGame((s) => s.states)
   const setScreen = useGame((s) => s.setScreen)
@@ -50,8 +51,14 @@ export function OpenForge() {
     : fb?.kind === 'not-target' ? `That makes ${fb.value}. We want ${open.target}!`
     : null
 
+  /* Keep the newest way in view inside its capped box. */
+  useEffect(() => {
+    const box = ways.current
+    if (box) box.scrollTop = box.scrollHeight
+  }, [open?.ways.length])
+
   return (
-    <div className="paper-dots scroll min-h-0 flex-1 px-6 pb-6">
+    <div className="flex min-h-0 flex-1 flex-col px-6 pb-6">
       <div className="mx-auto flex max-w-5xl flex-col gap-4 pt-4">
 
         <div className="flex flex-wrap items-center gap-3">
@@ -64,7 +71,13 @@ export function OpenForge() {
           </Button>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
+        {/*
+          Side by side as early as the width allows. Stacked, the bench and
+          the board of ways came to over a thousand pixels of column on an
+          840px-wide window, which the fit had to shrink to about half size
+          to get on screen. Two columns halve the height for free.
+        */}
+        <div className="grid gap-4 md:grid-cols-[1fr_300px]">
           {/* ── the bench ── */}
           <div className="flex flex-col gap-4">
             <Card className="flex flex-col items-center gap-4 px-5 py-6">
@@ -190,7 +203,15 @@ export function OpenForge() {
               <Kicker className="ml-1 self-center">ways used</Kicker>
             </div>
 
-            <div className="flex flex-col gap-2">
+            {/*
+              Capped and scrolled inside its own card. The list has no end
+              to it, and every way a child finds is another row: left to
+              grow it would push the page taller and taller and shrink the
+              rest of the screen to make room for a history nobody is
+              reading. The newest rows are the ones being added, so the
+              box is kept scrolled to the bottom.
+            */}
+            <div ref={ways} className="scroll flex max-h-52 flex-col gap-2 pr-1">
               <AnimatePresence initial={false}>
                 {open.ways.map((w, i) => (
                   <motion.div
