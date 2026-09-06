@@ -82,11 +82,40 @@ export function FuseStage({ order, locked }: { order: Order; locked: boolean }) 
     setUsed((u) => [...u, idx])
   }
 
+  /*
+    Take one back.
+
+    The tray holds exactly one winning pair and four decoys, on purpose:
+    a second winning pair would make the child's choice tell us nothing.
+    But that meant tapping a decoy first was a dead end. A child who put
+    down the 1 when the answer was 3 and 3 was told "One more! Find 5",
+    went hunting for a 5 that was never there, and had no way out but
+    Start over, which reads as being told off for one tap.
+
+    So the tray stays as it is and the placement stops being final.
+    Tapping a number on the anvil sends it back where it came from.
+  */
+  const unplace = (i: number) => {
+    if (locked || isSum) return
+    if (soundOn) S.sLift()
+    setStaged((s) => s.filter((_, k) => k !== i))
+    setUsed((u) => u.filter((_, k) => k !== i))
+  }
+
   const clearBench = () => {
     if (locked) return
     if (soundOn) S.sLift()
     setStaged([]); setUsed([])
   }
+
+  /*
+    What is still missing, and whether it is actually there to be found.
+    Saying "Find 5" when no 5 is on the tray sends a five-year-old looking
+    for something that does not exist.
+  */
+  const wanted = !isSum && staged.length === 1 ? order.target - staged[0]! : null
+  const partnerOnTray =
+    wanted !== null && order.ore.some((v, i) => !used.includes(i) && v === wanted)
 
   const bang = () => {
     if (locked || staged.length < 2) return
@@ -113,7 +142,10 @@ export function FuseStage({ order, locked }: { order: Order; locked: boolean }) 
                     animate={{ scale: 1, y: 0, rotate: 0, opacity: 1 }}
                     transition={{ type: 'spring', stiffness: 420, damping: 20 }}
                   >
-                    <Orb value={fmt(shown[i]!, order.scale)} size={narrow ? 74 : 96} />
+                    <Orb
+                      value={fmt(shown[i]!, order.scale)} size={narrow ? 74 : 96}
+                      onClick={isSum || locked ? undefined : () => unplace(i)}
+                    />
                   </motion.div>
                 ) : (
                   <motion.div
@@ -144,10 +176,14 @@ export function FuseStage({ order, locked }: { order: Order; locked: boolean }) 
           {full
             ? <Coach text={`Now BANG to check!`} dir="down" tone="tomato" />
             : <Coach
-                text={staged.length === 0
-                  ? `Drag or tap two numbers that make ${order.target}`
-                  : `One more! Find ${order.target - staged[0]!}`}
-                dir="down" tone="marigold"
+                text={
+                  staged.length === 0
+                    ? `Drag or tap two numbers that make ${order.target}`
+                    : partnerOnTray
+                      ? `One more! Find ${fmt(wanted!, order.scale)}`
+                      : `No ${fmt(wanted!, order.scale)} here. Tap the ${fmt(staged[0]!, order.scale)} to put it back`
+                }
+                dir="down" tone={partnerOnTray || staged.length === 0 ? 'marigold' : 'teal'}
               />}
           <div className="flex max-w-2xl flex-wrap justify-center gap-2.5 sm:gap-3.5">
             {order.ore.map((v, i) => (
