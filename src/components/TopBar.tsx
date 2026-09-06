@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useGame } from '../state/store'
 import { setAudioEnabled } from '../audio/sound'
 import { Icon } from './Icon'
@@ -14,6 +14,7 @@ export function TopBar() {
   const toggleSound = useGame((s) => s.toggleSound)
   const openStart = useGame((s) => s.openStart)
   const teachStart = useGame((s) => s.teachStart)
+  const heroToMeet = useGame((s) => s.heroToMeet)
 
   const toggles = (
     <IconButton
@@ -89,11 +90,77 @@ export function TopBar() {
           color={screen === 'open' ? 'marigold' : 'card'}
           onClick={() => (screen === 'open' ? setScreen('forge') : openStart(false))}
         />
-        <IconButton
-          name="pip" title="My Heroes: pick who cheers you on"
-          color={screen === 'heroes' ? 'marigold' : 'card'}
-          onClick={() => setScreen(screen === 'heroes' ? 'forge' : 'heroes')}
-        />
+        {/*
+          The way to the new hero.
+
+          A hero unlocking is the biggest thing that happens in the game,
+          and the child was told about it in the middle of the screen
+          while the button that actually opens the roster sat unmarked in
+          a row of seven identical buttons at the top. The banner said a
+          hero had arrived; nothing said where to find them.
+
+          So the button marks itself, and keeps marking itself until the
+          child has been. It does not time out and it survives a reload,
+          because a five-year-old who taps Next task instead is not
+          declining the invitation, they just have not got there yet.
+        */}
+        <div className="relative">
+          <IconButton
+            name="pip" title="My Heroes: pick who cheers you on"
+            color={screen === 'heroes' ? 'marigold' : heroToMeet ? 'marigold' : 'card'}
+            onClick={() => setScreen(screen === 'heroes' ? 'forge' : 'heroes')}
+          />
+          {/*
+            One element, not two side by side. AnimatePresence can only
+            track children it can key, and a fragment holding the ring and
+            the arrow is not one of those: the exit never completed and
+            the arrow stayed on screen pointing at nothing long after the
+            child had been to meet the hero. So both live inside a single
+            keyed box that exactly overlays the button, which leaves them
+            positioned as before and gives the exit something to hold on to.
+          */}
+          <AnimatePresence>
+            {heroToMeet && screen !== 'heroes' && (
+              <motion.div
+                key="hero-pointer"
+                className="pointer-events-none absolute inset-0"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0, transition: { duration: 0.18 } }}
+              >
+                {/* a ring that keeps pulsing out of the button */}
+                <motion.span
+                  className="absolute inset-0 rounded-2xl border-4 border-cream"
+                  animate={{ opacity: [0.9, 0, 0.9], scale: [1, 1.55, 1] }}
+                  transition={{ duration: 1.6, repeat: Infinity, ease: 'easeOut' }}
+                />
+                {/*
+                  The arrow hangs below the bar rather than inside it, so
+                  it points at the button from the open paper underneath
+                  instead of crowding a row of seven. Nothing else is there.
+                */}
+                <motion.div
+                  className="absolute left-1/2 top-full z-50 -translate-x-1/2 pt-1.5"
+                  initial={{ y: -8, scale: 0.7 }}
+                  animate={{ y: [0, 6, 0], scale: 1 }}
+                  transition={{
+                    scale: { type: 'spring', stiffness: 380, damping: 22 },
+                    y: { duration: 1.1, repeat: Infinity, ease: 'easeInOut' },
+                  }}
+                >
+                  <div className="flex flex-col items-center">
+                    <Icon name="back" size={22} strokeWidth={3.2}
+                          className="rotate-90 text-tomato drop-shadow-[0_2px_0_var(--color-ink)]" />
+                    <span className="ink hard-1 -mt-0.5 whitespace-nowrap rounded-full bg-marigold
+                                     px-2.5 py-1 font-display text-[11px] font-black text-ink">
+                      New hero!
+                    </span>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
         <IconButton
           name="clipboard" title="For Grown-Ups: progress and reports"
           color={screen === 'dashboard' ? 'marigold' : 'card'}

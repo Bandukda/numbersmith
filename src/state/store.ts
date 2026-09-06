@@ -73,6 +73,16 @@ interface Game {
   activeHero: string
   /** A hero that has just joined, so the forge can announce it once. */
   justUnlockedHero: string | null
+  /*
+    A hero has joined and the child has not been to meet them yet.
+
+    Separate from justUnlockedHero, which belongs to the celebration on
+    the forge screen and is cleared by the next order. This one has a job
+    that outlasts the celebration: it points at the button that opens the
+    roster. Cleared only by actually going there, and saved, so closing
+    the tab does not lose a hero the child never got to see.
+  */
+  heroToMeet: string | null
   ingots: number
   /** Simulated day counter, drives the forgetting curve. */
   day: number
@@ -157,6 +167,7 @@ export const useGame = create<Game>()(
       playerName: '',
       activeHero: STARTER_HERO,
       justUnlockedHero: null,
+      heroToMeet: null,
       ingots: 0,
       day: 0,
       bestWays: 0,
@@ -229,7 +240,9 @@ export const useGame = create<Game>()(
         })
       },
 
-      setScreen: (screen) => set({ screen }),
+      setScreen: (screen) =>
+        /* Going to meet them is what puts the pointer away. */
+        set(screen === 'heroes' ? { screen, heroToMeet: null } : { screen }),
       setPhase: (phase) => set({ phase }),
 
 
@@ -569,7 +582,7 @@ export const useGame = create<Game>()(
       resetAll: () => set({
         states: initialStates(), sparks: 0, ingots: 0, day: 0, badges: [], playerName: '',
         bestWays: 0, taught: 0, open: null, teach: null, hintUsed: false, attemptsThisOrder: 0,
-        activeHero: STARTER_HERO, justUnlockedHero: null,
+        activeHero: STARTER_HERO, justUnlockedHero: null, heroToMeet: null,
         warmup: [], warmupTotal: 0, inWarmup: false,
         totalForges: 0, bestStreak: 0, streak: 0, screen: 'title',
         order: null, recent: [], called: '', misconception: null,
@@ -597,7 +610,7 @@ export const useGame = create<Game>()(
         bestWays: s.bestWays, taught: s.taught,
         badges: s.badges, totalForges: s.totalForges, bestStreak: s.bestStreak,
         gradeFilter: s.gradeFilter, soundOn: s.soundOn, playerName: s.playerName,
-        activeHero: s.activeHero,
+        activeHero: s.activeHero, heroToMeet: s.heroToMeet,
       }),
     }))
 
@@ -664,6 +677,14 @@ function resolveCorrect(set: Set_, get: Get_) {
 
   if (soundOn) { S.sForged(); if (crossedMastery) window.setTimeout(S.sMastery, 420) }
 
+  const unlockedNow = (() => {
+    const after = unlockedHeroes(
+      Math.max(bestStreak, newStreak),
+      ingots + (crossedMastery ? 1 : 0),
+    )
+    return after.length > heroesBefore ? after[after.length - 1]!.id : null
+  })()
+
   set({
     states: { ...states, [order.skillId]: next },
     // The reward follows the same rule as the mastery: a clean answer
@@ -677,13 +698,9 @@ function resolveCorrect(set: Set_, get: Get_) {
     justMastered: crossedMastery ? order.skillId : null,
     celebrate: get().celebrate + 1,
     attemptsThisOrder: attemptsThisOrder + 1,
-    justUnlockedHero: (() => {
-      const after = unlockedHeroes(
-        Math.max(bestStreak, newStreak),
-        ingots + (crossedMastery ? 1 : 0),
-      )
-      return after.length > heroesBefore ? after[after.length - 1]!.id : null
-    })(),
+    justUnlockedHero: unlockedNow,
+    /* Set here, never cleared here, so it outlives the celebration. */
+    ...(unlockedNow ? { heroToMeet: unlockedNow } : {}),
     lastAward: firstTry
       ? { sparks: SPARKS.forge, label: 'You did it!' }
       : { sparks: SPARKS.repair, label: 'You fixed it!' },
