@@ -35,6 +35,21 @@ export function OpenForge() {
   const ops = unlockedOps(states)
 
   useEffect(() => { if (!open) start(false) }, [open, start])
+
+  /*
+    Keep the newest way in view inside its capped box.
+
+    Above the early return, with every other hook. Below it this ran on
+    the renders where there was a puzzle and not on the ones where there
+    was not, so React counted a different number of hooks each time and
+    tore the screen down: Your Way rendered blank whenever it was opened
+    before the puzzle existed.
+  */
+  useEffect(() => {
+    const box = ways.current
+    if (box) box.scrollTop = box.scrollHeight
+  }, [open?.ways.length])
+
   if (!open) return null
 
   const ready = open.a !== '' && open.b !== ''
@@ -51,12 +66,6 @@ export function OpenForge() {
     : fb?.kind === 'not-target' ? `That makes ${fb.value}. We want ${open.target}!`
     : null
 
-  /* Keep the newest way in view inside its capped box. */
-  useEffect(() => {
-    const box = ways.current
-    if (box) box.scrollTop = box.scrollHeight
-  }, [open?.ways.length])
-
   return (
     <div className="flex min-h-0 flex-1 flex-col px-6 pb-6">
       <div className="mx-auto flex max-w-5xl flex-col gap-4 pt-4">
@@ -66,8 +75,12 @@ export function OpenForge() {
           <span className="text-sm text-ink-mid">
             How many ways can you make it? There is no wrong answer here.
           </span>
-          <Button className="ml-auto" size="sm" icon="back" onClick={() => setScreen('title')}>
-            Back
+          {/* Not the same as Back to playing at the foot of the page:
+              that one returns to the current order, this one leaves for
+              the menu. Two buttons that both said "Back" and went to
+              different places was its own small lie. */}
+          <Button className="ml-auto" size="sm" icon="home" onClick={() => setScreen('title')}>
+            Main menu
           </Button>
         </div>
 
