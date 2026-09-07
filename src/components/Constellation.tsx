@@ -25,7 +25,6 @@ const STYLE: Record<SkillStatus, { fill: string; r: number; label: string }> = {
 export function Constellation() {
   const states = useGame((s) => s.states)
   const day = useGame((s) => s.day)
-  const setScreen = useGame((s) => s.setScreen)
   const [sel, setSel] = useState<string | null>(null)
 
   const selected = sel ? SKILL_BY_ID[sel] : null
@@ -125,9 +124,6 @@ export function Constellation() {
         )}
       </Card>
 
-      <Button className="mt-4 self-center" color="tomato" icon="back" onClick={() => setScreen('forge')}>
-        Back to playing
-      </Button>
       <BackToPlaying className="mt-6 pb-4" />
     </div>
   )

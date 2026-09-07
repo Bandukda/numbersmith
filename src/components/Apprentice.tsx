@@ -86,8 +86,10 @@ export function Apprentice() {
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="font-display text-3xl font-black tracking-tight">Teach Pip</h1>
           <span className="text-sm text-ink-mid">You know this one. Can you help?</span>
-          <Button className="ml-auto" size="sm" icon="back" onClick={() => setScreen('title')}>
-            Back
+          {/* Leaves for the menu; Back to playing at the foot of the
+              page returns to the order. Different places, different words. */}
+          <Button className="ml-auto" size="sm" icon="home" onClick={() => setScreen('title')}>
+            Main menu
           </Button>
         </div>
 

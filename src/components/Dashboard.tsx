@@ -21,7 +21,6 @@ export function Dashboard() {
   const bestStreak = useGame((s) => s.bestStreak)
   const bestWays = useGame((s) => s.bestWays)
   const taught = useGame((s) => s.taught)
-  const setScreen = useGame((s) => s.setScreen)
   const advanceDays = useGame((s) => s.advanceDays)
   const resetAll = useGame((s) => s.resetAll)
   const seedDemo = useGame((s) => s.seedDemo)
@@ -46,9 +45,6 @@ export function Dashboard() {
         <div className="flex flex-wrap items-baseline gap-3">
           <h1 className="font-display text-3xl font-black tracking-tight">For Grown-Ups</h1>
           <span className="text-sm text-ink-mid">Day {day} of practice</span>
-          <Button className="ml-auto" size="sm" icon="back" onClick={() => setScreen('forge')}>
-            Back to playing
-          </Button>
         </div>
 
         <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
