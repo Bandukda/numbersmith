@@ -54,6 +54,21 @@ export function WrittenReport() {
     setError(null)
   }
 
+  /**
+   * Forget whichever secret this build is holding, so the gate comes back.
+   *
+   * Both paths need it. A deployed site remembers the password; a copy on
+   * your own machine remembers a pasted API key, which is the more
+   * sensitive of the two and had even less business being a one-way door.
+   */
+  const lock = () => {
+    if (server) setPassword(''); else setKey('')
+    setReady(false)
+    setKeyInput('')
+    setText(null)
+    setError(null)
+  }
+
   const run = async () => {
     setBusy(true); setError(null); setText(null)
     abort.current?.abort()
@@ -154,6 +169,27 @@ export function WrittenReport() {
             {server ? 'Unlock' : 'Save key'}
           </Button>
         </div>
+      )}
+
+      {/*
+        A way back out.
+
+        The password is remembered in this browser so a parent does not
+        have to retype it every time they want to read how their child is
+        getting on. That is right for the person who owns the machine and
+        wrong for every other case: a shared laptop, a classroom
+        computer, a demo that needs to show the gate more than once. Until
+        now there was no way to put it back, from anywhere in the app.
+      */}
+      {ready && server !== null && (
+        <button
+          onClick={lock}
+          className="mt-3 font-display text-xs font-black uppercase tracking-wider
+                     text-ink-dim underline decoration-2 underline-offset-2
+                     hover:text-ink focus:outline-none focus:ring-4 focus:ring-marigold"
+        >
+          {server ? 'Lock this again' : 'Forget this key'}
+        </button>
       )}
 
       {/*
