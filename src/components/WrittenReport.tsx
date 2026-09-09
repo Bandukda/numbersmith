@@ -127,8 +127,21 @@ export function WrittenReport() {
       */}
       {!ready && server !== null && (
         <div className="mt-4 flex flex-wrap items-center gap-2.5">
+          {/*
+            A shared passphrase for one feature, not an account login.
+            Without saying so the browser offers saved credentials here
+            and then asks whether to remember this as a password, which
+            is a confusing thing to be asked on a page about a child's
+            arithmetic.
+          */}
           <input
             type="password"
+            name="numbersmith-report-unlock"
+            id="numbersmith-report-unlock"
+            autoComplete="off"
+            data-1p-ignore
+            data-lpignore="true"
+            data-form-type="other"
             value={keyInput}
             onChange={(e) => setKeyInput(e.target.value)}
             placeholder={server ? 'Enter the password' : 'Paste a DeepSeek API key'}

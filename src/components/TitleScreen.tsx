@@ -61,12 +61,37 @@ export function TitleScreen() {
           cheers, so nothing here gates the button below.
         */}
         <Kicker className="mt-8">What shall we call you?</Kicker>
+        {/*
+          Nothing here is a form field the browser should recognise.
+
+          Left alone, Chrome read the placeholder and the label, decided
+          this was a person's name, and offered the grown-up's saved
+          profile: full name and email address, on a dropdown, over a
+          screen built for a five-year-old. A child tapping that would
+          have put an adult's email address into the game.
+
+          So the attributes say plainly that there is nothing to fill,
+          the two password managers with their own opt-outs get theirs,
+          and neither the placeholder nor the label uses the word the
+          heuristics key off. The question above the box is what tells
+          the child what to type, and it still says it in words.
+        */}
         <input
           value={playerName}
           onChange={(e) => setPlayerName(e.target.value)}
           maxLength={12}
-          placeholder="Type your name"
-          aria-label="Your name, if you want one"
+          type="text"
+          name="numbersmith-callsign"
+          id="numbersmith-callsign"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="words"
+          spellCheck={false}
+          data-1p-ignore
+          data-lpignore="true"
+          data-form-type="other"
+          placeholder="Type it here"
+          aria-label="What we should call you"
           className="ink hard-2 mt-3 w-60 rounded-blob bg-card px-5 py-3 text-center
                      font-display text-xl font-black text-ink placeholder:font-extrabold
                      placeholder:text-ink/35 focus:outline-none focus:ring-4 focus:ring-marigold"
