@@ -616,8 +616,16 @@ export const useGame = create<Game>()(
 
 if (import.meta.env.DEV) {
   ;(window as unknown as Record<string, unknown>).__game = useGame
-  ;(window as unknown as Record<string, unknown>).__audio = S
 }
+
+/*
+  The audio diagnostic ships. "No sound" only ever gets reported from a
+  real browser on a real machine, and by then a development-only hook is
+  no use to anybody: window.__audio.audioDebug() in the console says
+  whether the context exists, what state it is in and whether the master
+  gain is up, which is nearly always the whole answer.
+*/
+;(window as unknown as Record<string, unknown>).__audio = S
 
 /* ── grading pipeline ────────────────────────────────────────── */
 

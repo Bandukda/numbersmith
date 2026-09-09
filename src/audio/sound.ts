@@ -28,7 +28,17 @@ function ac(): AudioContext | null {
     master.gain.value = 0.62
     master.connect(ctx.destination)
   }
-  if (ctx.state === 'suspended') void ctx.resume()
+  /*
+    Anything that is not running needs waking, not only 'suspended'.
+
+    Safari carries a fourth state the spec does not have: 'interrupted'.
+    It enters it whenever something else takes the audio hardware, which
+    on a laptop means another tab playing a video, the machine sleeping,
+    or the tab sitting in the background for a while. Checking only for
+    'suspended' meant that once Safari interrupted the context nothing
+    ever resumed it, and the game went silent for the rest of the session.
+  */
+  if (ctx.state !== 'running') void ctx.resume()
   return ctx
 }
 
@@ -41,7 +51,13 @@ export function audioEnabled() { return enabled }
 /** Unlock audio on the first user gesture (browser autoplay policy). */
 export function primeAudio() { ac() }
 
-/** Dev-only window hook, so audio problems can be inspected live. */
+/**
+ * What the audio engine currently thinks is true.
+ *
+ * Reachable on a deployed build, not just in development: "no sound" is
+ * reported from real browsers on real machines, and the answer is
+ * usually one of these five fields rather than anything in the code.
+ */
 export function audioDebug() {
   return {
     enabled,
@@ -49,6 +65,7 @@ export function audioDebug() {
     ctxState: ctx ? ctx.state : 'none',
     masterGain: master ? master.gain.value : null,
     sampleRate: ctx ? ctx.sampleRate : null,
+    currentTime: ctx ? ctx.currentTime : null,
   }
 }
 
@@ -58,15 +75,57 @@ export function audioDebug() {
  * prime on every entry point, arm one listener for the first gesture
  * anywhere: miss it and the whole game is silent.
  */
+const GESTURES = ['pointerdown', 'touchend', 'keydown', 'click'] as const
+
+/**
+ * Actually start the context, rather than only asking it to resume.
+ *
+ * Safari does not treat a context as started until a source node has run
+ * on it. Left at resume() alone it will happily report 'running' and
+ * produce nothing at all, which is exactly the shape of "works in Chrome,
+ * silent in Safari". One sample of silence is enough to convince it.
+ */
+function unlockNow() {
+  const c = ac()
+  if (!c) return
+  void c.resume()
+  try {
+    const buf = c.createBuffer(1, 1, 22050)
+    const src = c.createBufferSource()
+    src.buffer = buf
+    src.connect(c.destination)
+    src.start(0)
+  } catch {
+    /* An older engine that will not build the buffer still has resume(). */
+  }
+}
+
 export function armAudioOnFirstGesture() {
   if (typeof window === 'undefined') return
+
   const unlock = () => {
-    primeAudio()
-    window.removeEventListener('pointerdown', unlock)
-    window.removeEventListener('keydown', unlock)
+    unlockNow()
+    /*
+      Stop listening only once it has genuinely come up.
+
+      This used to unbind on the first gesture whether the unlock had
+      worked or not, so a single missed one left the game mute for the
+      whole session with no second chance at it. Safari misses the first
+      one often enough to matter.
+    */
+    if (ctx && ctx.state === 'running') {
+      for (const e of GESTURES) window.removeEventListener(e, unlock)
+    }
   }
-  window.addEventListener('pointerdown', unlock, { once: false })
-  window.addEventListener('keydown', unlock, { once: false })
+  for (const e of GESTURES) window.addEventListener(e, unlock)
+
+  /*
+    Coming back to the tab. Safari suspends the context when the page is
+    hidden and does not reliably bring it back by itself.
+  */
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && ctx && ctx.state !== 'running') void ctx.resume()
+  })
 }
 
 type ToneOpts = { type?: OscillatorType; dur?: number; gain?: number; detune?: number; delay?: number }
