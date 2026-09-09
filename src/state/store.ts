@@ -572,7 +572,19 @@ export const useGame = create<Game>()(
           sparks: 1840,
           ingots: 12,
           totalForges: 161,
-          bestStreak: 19,
+          /*
+            Parked two short of the first streak gate, deliberately.
+
+            At 19 every hero in the roster was already unlocked, so the
+            demo player could show the reward system only as a finished
+            collection: nothing left to earn, and no way to demonstrate
+            an unlock without wiping the save and starting over. Two
+            leaves the four streak-gated heroes locked while the ones
+            bought with medals stay earned, so the roster reads as a
+            journey in progress and the next hero is always exactly
+            three correct answers away.
+          */
+          bestStreak: 2,
           badges: ['flexible-thinker'],
           screen: 'constellation',
           streak: 0,
